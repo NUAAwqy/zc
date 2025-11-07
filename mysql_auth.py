@@ -9,14 +9,14 @@ import pymysql
 import os
 
 # MySQL数据库配置
-# MYSQL_CONFIG = {
-#     'host': 'localhost',
-#     'port': 3306,
-#     'user': 'root',
-#     'password': '1234',
-#     'database': 'bearing_diagnosis',
-#     'charset': 'utf8mb4'
-# }
+MYSQL_CONFIG = {
+    'host': 'localhost',
+    'port': 3306,
+    'user': 'root',
+    'password': '1234',
+    'database': 'bearing_diagnosis',
+    'charset': 'utf8mb4'
+}
 
 
 def get_db_connection():
