@@ -10,8 +10,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
-from scipy.io import loadmat
+from sklearn.model_selection import train_test_split
+from tqdm import tqdm, trange
+import json
 import os
 from feature_extraction import feature_extraction
 from data_preprocess import diagnosis_stage_prepro
@@ -49,18 +52,21 @@ class RULModel(nn.Module):
         out = self.relu(self.fc2(out))
         out = self.dropout(out)
         out = self.fc3(out)
+        out = torch.sigmoid(out)
         return out
 
 
 class RULCNNModel(nn.Module):
     """基于CNN的RUL预测模型"""
-    def __init__(self, input_size):
+    def __init__(self, input_channels, sequence_length):
         super(RULCNNModel, self).__init__()
-        self.conv1 = nn.Conv1d(1, 64, kernel_size=20, stride=4, padding=10)
+        # input_channels: 输入特征数（如9个健康特征）
+        # sequence_length: 序列长度（如50个时间步）
+        self.conv1 = nn.Conv1d(input_channels, 64, kernel_size=3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm1d(64)
-        self.conv2 = nn.Conv1d(64, 128, kernel_size=10, stride=2, padding=5)
+        self.conv2 = nn.Conv1d(64, 128, kernel_size=3, stride=1, padding=1)
         self.bn2 = nn.BatchNorm1d(128)
-        self.conv3 = nn.Conv1d(128, 256, kernel_size=5, stride=2, padding=2)
+        self.conv3 = nn.Conv1d(128, 256, kernel_size=3, stride=1, padding=1)
         self.bn3 = nn.BatchNorm1d(256)
         
         self.relu = nn.ReLU()
@@ -68,25 +74,29 @@ class RULCNNModel(nn.Module):
         self.dropout = nn.Dropout(0.3)
         
         # 计算卷积后的大小
-        conv_out_size = self._get_conv_output_size(input_size)
+        conv_out_size = self._get_conv_output_size(sequence_length)
         
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(conv_out_size, 128)
         self.fc2 = nn.Linear(128, 64)
         self.fc3 = nn.Linear(64, 1)
         
-    def _get_conv_output_size(self, input_size):
+    def _get_conv_output_size(self, seq_length):
         """计算卷积层输出大小"""
-        size = input_size
-        # Conv1 + MaxPool
-        size = ((size + 2*10 - 20) // 4 + 1) // 2
+        size = seq_length
+        # Conv1 + MaxPool (kernel=3, stride=1, padding=1)
+        size = ((size + 2*1 - 3) // 1 + 1) // 2
         # Conv2 + MaxPool  
-        size = ((size + 2*5 - 10) // 2 + 1) // 2
+        size = ((size + 2*1 - 3) // 1 + 1) // 2
         # Conv3 + MaxPool
-        size = ((size + 2*2 - 5) // 2 + 1) // 2
+        size = ((size + 2*1 - 3) // 1 + 1) // 2
         return 256 * size
         
     def forward(self, x):
+        # 输入: (batch, seq_len, features)
+        # 转换为: (batch, features, seq_len) 用于Conv1d
+        x = x.transpose(1, 2)
+        
         x = self.relu(self.bn1(self.conv1(x)))
         x = self.maxpool(x)
         x = self.dropout(x)
@@ -105,58 +115,83 @@ class RULCNNModel(nn.Module):
         x = self.relu(self.fc2(x))
         x = self.dropout(x)
         x = self.fc3(x)
+        x = torch.sigmoid(x)
         return x
 
 
 # ========================== 训练RUL模型 ==========================
+class TrainingHistory:
+    """记录训练历史"""
+    def __init__(self):
+        self.history = {
+            'loss': [],
+            'acc': [],
+            'val_loss': [],
+            'val_acc': []
+        }
+    
+    def update(self, loss, acc, val_loss, val_acc):
+        self.history['loss'].append(loss)
+        self.history['acc'].append(acc)
+        self.history['val_loss'].append(val_loss)
+        self.history['val_acc'].append(val_acc)
 
-def training_rul_model(X_train, y_train, X_valid, y_valid, X_test, y_test, 
-                      model_type='LSTM', batch_size=64, epochs=100):
+
+def calc_rul_accuracy(outputs, targets, threshold=0.1):
+    """
+    计算RUL预测的近似准确率
+    误差在阈值范围内算作预测正确
+    """
+    outputs = outputs.detach().cpu().numpy().flatten()
+    targets = targets.detach().cpu().numpy().flatten()
+    # 绝对误差
+    abs_error = np.abs(outputs - targets)
+    # 阈值（真实值的10%）
+    tol = np.maximum(threshold * np.abs(targets), 1e-3)
+    correct = (abs_error <= tol).sum()
+    return correct / len(targets)
+
+
+def training_rul_model(X_train, y_train, X_valid, y_valid, X_test, y_test, model_type='LSTM', 
+                       batch_size=64, epochs=100, learn_rate=0.001):
     """
     训练RUL预测模型
     
     参数:
-        X_train: 训练集特征 (N, seq_len, features) for LSTM or (N, features) for CNN
-        y_train: 训练集RUL标签 (N, 1)
-        X_valid: 验证集
-        y_valid: 验证集标签
-        X_test: 测试集
-        y_test: 测试集标签
+        training_data_path: 训练数据路径
         model_type: 模型类型 ('LSTM' or 'CNN')
         batch_size: 批次大小
         epochs: 训练轮数
-    
+        max_sequence_length: 最大序列长度
+        learn_rate: 学习率
+        train_ratio: 训练集比例 (默认0.7)
+        valid_ratio: 验证集比例 (默认0.2)，测试集比例 = 1 - train_ratio - valid_ratio
+
     返回:
         model: 训练好的模型
         history: 训练历史
-        test_loss: 测试集损失
+        test_metrics: 测试集指标
     """
-    
-    # 转换为PyTorch张量
+    # ========== 转换为PyTorch张量 ==========
     X_train = torch.FloatTensor(X_train)
     y_train = torch.FloatTensor(y_train).reshape(-1, 1)
+    
     X_valid = torch.FloatTensor(X_valid)
     y_valid = torch.FloatTensor(y_valid).reshape(-1, 1)
+    
     X_test = torch.FloatTensor(X_test)
     y_test = torch.FloatTensor(y_test).reshape(-1, 1)
     
-    # 调整输入维度
+    # ========== 创建模型 ==========
+    input_size = X_train.shape[2]
+    seq_length = X_train.shape[1]
+    
     if model_type == 'LSTM':
-        if len(X_train.shape) == 2:
-            X_train = X_train.unsqueeze(1)  # (N, 1, features)
-            X_valid = X_valid.unsqueeze(1)
-            X_test = X_test.unsqueeze(1)
-        input_size = X_train.shape[2]
         model = RULModel(input_size).to(device)
     else:  # CNN
-        if len(X_train.shape) == 2:
-            X_train = X_train.unsqueeze(1)  # (N, 1, features)
-            X_valid = X_valid.unsqueeze(1)
-            X_test = X_test.unsqueeze(1)
-        input_size = X_train.shape[2]
-        model = RULCNNModel(input_size).to(device)
-    
-    # 创建数据加载器
+        model = RULCNNModel(input_size, seq_length).to(device)
+        
+    # ========== 创建数据加载器 ==========
     train_dataset = TensorDataset(X_train, y_train)
     valid_dataset = TensorDataset(X_valid, y_valid)
     test_dataset = TensorDataset(X_test, y_test)
@@ -165,74 +200,76 @@ def training_rul_model(X_train, y_train, X_valid, y_valid, X_test, y_test,
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     
-    # 定义损失函数和优化器
-    criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
+    # ========== 定义优化器和调度器 ==========
+    optimizer = optim.AdamW(model.parameters(), lr=learn_rate, weight_decay=1e-5)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=10, factor=0.5)
     
     # 训练历史
-    history = {
-        'train_loss': [],
-        'val_loss': [],
-        'train_mae': [],
-        'val_mae': []
-    }
+    history = TrainingHistory()
     
     best_val_loss = float('inf')
     patience_counter = 0
-    max_patience = 20
+    max_patience = 10
     
-    # 训练模型
-    for epoch in range(epochs):
+    # ========== 训练模型 ==========
+    for epoch in trange(epochs, desc='epochs', unit='epoch', colour='#448844'):
         # 训练阶段
         model.train()
         train_loss = 0.0
         train_mae = 0.0
         train_samples = 0
+        train_acc = 0.0
         
-        for inputs, targets in train_loader:
+        for batch_data in train_loader:
+            inputs, targets = batch_data
             inputs, targets = inputs.to(device), targets.to(device)
             
-            optimizer.zero_grad()
             outputs = model(inputs)
-            loss = criterion(outputs, targets)
+            loss = F.mse_loss(outputs, targets)
             loss.backward()
             optimizer.step()
+            optimizer.zero_grad()
             
             train_loss += loss.item() * inputs.size(0)
             train_mae += torch.abs(outputs - targets).sum().item()
             train_samples += inputs.size(0)
+            batch_acc = calc_rul_accuracy(outputs, targets, threshold=0.5)
+            train_acc += batch_acc * inputs.size(0)
         
         train_loss = train_loss / train_samples
         train_mae = train_mae / train_samples
+        train_acc = train_acc / train_samples
         
         # 验证阶段
         model.eval()
         val_loss = 0.0
         val_mae = 0.0
         val_samples = 0
+        val_acc = 0.0
         
         with torch.no_grad():
-            for inputs, targets in valid_loader:
+            for batch_data in valid_loader:
+                inputs, targets = batch_data
                 inputs, targets = inputs.to(device), targets.to(device)
+                
                 outputs = model(inputs)
-                loss = criterion(outputs, targets)
+                loss = F.mse_loss(outputs, targets)
                 
                 val_loss += loss.item() * inputs.size(0)
                 val_mae += torch.abs(outputs - targets).sum().item()
                 val_samples += inputs.size(0)
+                batch_acc = calc_rul_accuracy(outputs, targets, threshold=0.5)
+                val_acc += batch_acc * inputs.size(0)
         
         val_loss = val_loss / val_samples
         val_mae = val_mae / val_samples
+        val_acc = val_acc / val_samples
         
         # 更新学习率
         scheduler.step(val_loss)
         
         # 记录历史
-        history['train_loss'].append(train_loss)
-        history['val_loss'].append(val_loss)
-        history['train_mae'].append(train_mae)
-        history['val_mae'].append(val_mae)
+        history.update(train_loss, train_acc, val_loss, val_acc)
         
         # 早停
         if val_loss < best_val_loss:
@@ -244,38 +281,97 @@ def training_rul_model(X_train, y_train, X_valid, y_valid, X_test, y_test,
                 print(f"早停于 epoch {epoch+1}")
                 break
         
-        if (epoch + 1) % 10 == 0:
-            print(f'Epoch {epoch+1}/{epochs}: '
-                  f'Train Loss: {train_loss:.4f}, Train MAE: {train_mae:.2f}, '
-                  f'Val Loss: {val_loss:.4f}, Val MAE: {val_mae:.2f}')
+        print(f'Epoch {epoch+1}/{epochs}: '
+                f'Train Loss: {train_loss}, Train MAE: {train_mae}, '
+                f'Val Loss: {val_loss}, Val MAE: {val_mae}')
     
-    # 测试阶段
+    # ========== 测试阶段 ==========
     model.eval()
     test_loss = 0.0
     test_mae = 0.0
     test_samples = 0
+    test_acc = 0.0
     
     with torch.no_grad():
-        for inputs, targets in test_loader:
+        for batch_data in test_loader:
+            inputs, targets = batch_data
             inputs, targets = inputs.to(device), targets.to(device)
+            
             outputs = model(inputs)
-            loss = criterion(outputs, targets)
+            loss = F.mse_loss(outputs, targets)
             
             test_loss += loss.item() * inputs.size(0)
             test_mae += torch.abs(outputs - targets).sum().item()
             test_samples += inputs.size(0)
+            batch_acc = calc_rul_accuracy(outputs, targets, threshold=0.5)
+            test_acc += batch_acc * inputs.size(0)
     
     test_loss = test_loss / test_samples
     test_mae = test_mae / test_samples
+    test_acc = test_acc / test_samples
     
-    print(f'\n测试集 - Loss: {test_loss:.4f}, MAE: {test_mae:.2f}')
+    print(f'\n测试集 - Loss: {test_loss}, MAE: {test_mae}, Accuracy: {test_acc}')
+
+    # _save_checkpoint(model, epoch, save_path)
     
-    return model, history, {'test_loss': test_loss, 'test_mae': test_mae}
+    return model, history, [test_loss, test_acc]
+
+
+def generate_rul_data(json_file_dir, max_sequence_length=None):
+    """
+    生成RUL训练数据，使用累积序列（下三角矩阵形式）
+    
+    参数:
+        json_file_dir: JSON文件目录
+        max_sequence_length: 最大序列长度（None表示使用所有数据）
+    
+    返回:
+        X: (N, max_seq_len, features) - 带padding的序列
+        y: (N, 1) - RUL标签
+    """
+    features = []
+    labels = []
+    max_sequence_length = 50
+
+    json_files = sorted(os.listdir(json_file_dir))
+    for idx, json_file_name in tqdm(enumerate(json_files), desc='Loading JSON files', unit='file', colour='#448844'):
+        horizontal_signals = []
+        vertical_signals = []
+
+        with open(os.path.join(json_file_dir, json_file_name), 'r') as f:
+            data = json.load(f)
+            for item in data:
+                horizontal_signals.append(item['horizontal_signal'])
+                vertical_signals.append(item['vertical_signal'])
+        features.append(extract_health_features(horizontal_signals, vertical_signals))
+        labels.append((len(os.listdir(json_file_dir)) - idx) / len(os.listdir(json_file_dir)))
+
+    n_samples = len(labels)
+    n_features = features[0].shape[0]
+    
+    # 确定最大序列长度
+    if max_sequence_length is None:
+        max_seq_len = n_samples
+    else:
+        max_seq_len = min(max_sequence_length, n_samples)
+
+    X = np.zeros((n_samples, max_seq_len, n_features), dtype=np.float32)
+    y = torch.tensor(np.array(labels, dtype=np.float32)).unsqueeze(1)
+    
+    for i in range(n_samples):
+        seq_len = min(i + 1, max_seq_len)
+        start_idx = max(0, i + 1 - max_seq_len)
+        end_idx = i + 1
+        
+        sequence = features[start_idx:end_idx]
+        X[i, -seq_len:, :] = sequence  # 右对齐填充
+    
+    return X, y
 
 
 # ========================== RUL预测 ==========================
 
-def predict_rul(model_path, data_path, sequence_length=10):
+def predict_rul(model_path, data_path):
     """
     使用训练好的RUL模型预测剩余寿命
     
@@ -287,59 +383,37 @@ def predict_rul(model_path, data_path, sequence_length=10):
     返回:
         预测结果字典
     """
-    try:
-        # 加载模型
-        model = torch.load(model_path, map_location=device)
-        model.eval()
+    # 加载模型
+    model = torch.load(model_path, map_location=device)
+    model.eval()
+    
+    # 加载并预处理数据
+    TRAINED_SEQUENCE_LENGTH = 50
+    X, y = generate_rul_data(data_path, max_sequence_length=TRAINED_SEQUENCE_LENGTH)
+    input_sequence = X[150, :, :]
+    input_tensor = torch.FloatTensor(input_sequence).unsqueeze(0).to(device)  # (1, seq_len, features)
+
+    # 预测
+    with torch.no_grad():
+        rul_prediction = model(input_tensor).item()
+    
+    # 计算置信度（基于特征的标准差）
+    feature_std = np.std(input_sequence, axis=0).mean()
+    confidence = max(0.0, min(1.0, 1.0 - feature_std / 10.0))
+    
+    # 计算健康指数（0-100）
+    health_index = calculate_health_index(input_sequence[-1])
+    
+    return {
+        'rul': max(0, rul_prediction),
+        'confidence': confidence,
+        'health_index': health_index,
+        'status': get_health_status(health_index)
+    }
         
-        # 加载并预处理数据
-        # 这里我们使用诊断数据预处理函数
-        diagnosis_samples = diagnosis_stage_prepro(data_path, 2048, 100, normal=True)
-        
-        # 提取时域特征作为健康指标
-        features_list = []
-        for sample in diagnosis_samples:
-            features = extract_health_features(sample)
-            features_list.append(features)
-        
-        features_array = np.array(features_list)
-        
-        # 如果有足够的历史数据，使用序列
-        if len(features_array) >= sequence_length:
-            # 使用最近的sequence_length个数据点
-            sequence = features_array[-sequence_length:]
-        else:
-            # 不够就填充
-            padding = np.tile(features_array[0], (sequence_length - len(features_array), 1))
-            sequence = np.vstack([padding, features_array])
-        
-        # 转换为tensor
-        input_tensor = torch.FloatTensor(sequence).unsqueeze(0).to(device)  # (1, seq_len, features)
-        
-        # 预测
-        with torch.no_grad():
-            rul_prediction = model(input_tensor).item()
-        
-        # 计算置信度（基于特征的标准差）
-        feature_std = np.std(features_array, axis=0).mean()
-        confidence = max(0.0, min(1.0, 1.0 - feature_std / 10.0))
-        
-        # 计算健康指数（0-100）
-        health_index = calculate_health_index(features_array[-1])
-        
-        return {
-            'rul': max(0, rul_prediction),  # RUL不能为负
-            'confidence': confidence,
-            'health_index': health_index,
-            'status': get_health_status(health_index)
-        }
-        
-    except Exception as e:
-        # 如果RUL模型不存在或出错，使用基于规则的方法
-        return rule_based_rul_estimation(data_path)
 
 
-def extract_health_features(signal):
+def extract_health_features(horizontal_signal, vertical_signal):
     """
     从信号中提取健康特征
     
@@ -350,18 +424,50 @@ def extract_health_features(signal):
         特征向量
     """
     # 时域特征
-    mean = np.mean(signal)
-    std = np.std(signal)
-    rms = np.sqrt(np.mean(signal**2))
-    peak = np.max(np.abs(signal))
-    kurtosis = np.mean((signal - mean)**4) / (std**4) if std > 0 else 0
-    skewness = np.mean((signal - mean)**3) / (std**3) if std > 0 else 0
-    crest_factor = peak / rms if rms > 0 else 0
+    # 均值，信号的平均值
+    mean_h = np.mean(horizontal_signal)
+    # 标准差，信号的波动程度
+    std_h = np.std(horizontal_signal)
+    # 均方根，反映信号能量
+    rms_h = np.sqrt(np.mean(np.array(horizontal_signal)**2))
+    # 峰值，信号的最大绝对值
+    peak_h = np.max(np.abs(np.array(horizontal_signal)))
+    # 峭度，衡量信号尖锐程度（异常检测常用）
+    kurtosis_h = np.mean((np.array(horizontal_signal) - mean_h)**4) / (std_h**4) if std_h > 0 else 0
+    # 偏度，衡量信号分布的对称性
+    skewness_h = np.mean((np.array(horizontal_signal) - mean_h)**3) / (std_h**3) if std_h > 0 else 0
+    # 峰值因子，峰值与均方根之比，反映冲击性
+    crest_factor_h = peak_h / rms_h if rms_h > 0 else 0
+
+    mean_v = np.mean(vertical_signal)
+    std_v = np.std(vertical_signal)
+    rms_v = np.sqrt(np.mean(np.array(vertical_signal)**2))
+    peak_v = np.max(np.abs(np.array(vertical_signal)))
+    kurtosis_v = np.mean((np.array(vertical_signal) - mean_v)**4) / (std_v**4) if std_v > 0 else 0
+    skewness_v = np.mean((np.array(vertical_signal) - mean_v)**3) / (std_v**3) if std_v > 0 else 0
+    crest_factor_v = peak_v / rms_v if rms_v > 0 else 0
     
     # 频域特征
-    fft_values = np.abs(np.fft.fft(signal))
-    fft_mean = np.mean(fft_values)
-    fft_std = np.std(fft_values)
+    # 信号的傅里叶变换幅值
+    fft_values_h = np.abs(np.fft.fft(horizontal_signal))
+    # 频域均值
+    fft_mean_h = np.mean(fft_values_h)
+    # 频域标准差
+    fft_std_h = np.std(fft_values_h)
+
+    fft_values_v = np.abs(np.fft.fft(vertical_signal))
+    fft_mean_v = np.mean(fft_values_v)
+    fft_std_v = np.std(fft_values_v)
+
+    mean = (mean_h + mean_v) / 2
+    std = (std_h + std_v) / 2
+    rms = (rms_h + rms_v) / 2
+    peak = (peak_h + peak_v) / 2
+    kurtosis = (kurtosis_h + kurtosis_v) / 2
+    skewness = (skewness_h + skewness_v) / 2
+    crest_factor = (crest_factor_h + crest_factor_v) / 2
+    fft_mean = (fft_mean_h + fft_mean_v) / 2
+    fft_std = (fft_std_h + fft_std_v) / 2
     
     return np.array([mean, std, rms, peak, kurtosis, skewness, 
                     crest_factor, fft_mean, fft_std])
@@ -406,94 +512,7 @@ def get_health_status(health_index):
         return "严重故障"
 
 
-def rule_based_rul_estimation(data_path):
-    """
-    基于规则的RUL估算（当没有训练好的RUL模型时使用）
-    
-    参数:
-        data_path: 数据文件路径
-    
-    返回:
-        预测结果字典
-    """
-    try:
-        # 加载并预处理数据
-        diagnosis_samples = diagnosis_stage_prepro(data_path, 2048, 100, normal=True)
-        
-        # 提取特征
-        features_list = []
-        for sample in diagnosis_samples:
-            features = extract_health_features(sample)
-            features_list.append(features)
-        
-        features_array = np.array(features_list)
-        
-        # 计算当前健康指数
-        current_health = calculate_health_index(features_array[-1])
-        
-        # 基于健康指数估算RUL（简单线性模型）
-        # 假设健康指数每小时下降0.1
-        if current_health > 20:
-            estimated_rul = (current_health - 20) / 0.1  # 小时
-        else:
-            estimated_rul = 0
-        
-        confidence = 0.6  # 规则方法置信度较低
-        
-        return {
-            'rul': estimated_rul,
-            'confidence': confidence,
-            'health_index': current_health,
-            'status': get_health_status(current_health),
-            'method': 'rule-based'
-        }
-        
-    except Exception as e:
-        return {
-            'rul': 0,
-            'confidence': 0,
-            'health_index': 0,
-            'status': '未知',
-            'error': str(e)
-        }
-
-
-# ========================== 测试代码 ==========================
-
-if __name__ == '__main__':
-    # 生成模拟RUL数据用于测试
-    print("RUL预测模块测试")
-    
-    # 模拟训练数据
-    n_samples = 1000
-    seq_len = 10
-    n_features = 9
-    
-    # 生成模拟数据：随着时间推移，RUL线性下降
-    X = np.random.randn(n_samples, seq_len, n_features).astype(np.float32)
-    y = np.linspace(100, 0, n_samples).astype(np.float32)  # RUL从100到0
-    
-    # 划分数据集
-    train_size = int(0.7 * n_samples)
-    valid_size = int(0.2 * n_samples)
-    
-    X_train = X[:train_size]
-    y_train = y[:train_size]
-    X_valid = X[train_size:train_size+valid_size]
-    y_valid = y[train_size:train_size+valid_size]
-    X_test = X[train_size+valid_size:]
-    y_test = y[train_size+valid_size:]
-    
-    print(f"训练集: {X_train.shape}, {y_train.shape}")
-    print(f"验证集: {X_valid.shape}, {y_valid.shape}")
-    print(f"测试集: {X_test.shape}, {y_test.shape}")
-    
-    # 训练模型
-    print("\n开始训练LSTM RUL模型...")
-    model, history, test_metrics = training_rul_model(
-        X_train, y_train, X_valid, y_valid, X_test, y_test,
-        model_type='LSTM', batch_size=64, epochs=50
-    )
-    
-    print(f"\n测试结果: MAE = {test_metrics['test_mae']:.2f}")
-
+model_path = 'models/RUL_CNN_20251114_172031.pth'
+data_path = 'uploads/Test_dataset/bearing1_3'
+result = predict_rul(model_path, data_path)
+print(result)

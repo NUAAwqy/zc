@@ -60,6 +60,26 @@
       "accuracy": 0.985,
       "train_time": "20251030_232952",
       "status": "completed"
+    },
+    {
+      "id": "b47ff991-c53e-490c-885e-ebe0d63425f7",
+      "name": "RUL_LSTM_20251114_171124",
+      "type": "RUL_LSTM",
+      "path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "config_path": "./models\\RUL_LSTM_20251114_171124.json",
+      "accuracy": 0.9233511586452763,
+      "train_time": "20251114_171124",
+      "status": "completed"
+    },
+    {
+      "id": "8bd994c8-f5ec-4f81-a395-02962d732097",
+      "name": "RUL_CNN_20251114_172031",
+      "type": "RUL_CNN",
+      "path": "./models\\RUL_CNN_20251114_172031.pth",
+      "config_path": "./models\\RUL_CNN_20251114_172031.json",
+      "accuracy": 0.9857397504456328,
+      "train_time": "20251114_172031",
+      "status": "completed"
     }
   ],
   "diagnoses": [

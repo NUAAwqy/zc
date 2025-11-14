@@ -170,11 +170,12 @@
 
                     <div class="upload-card">
                         <h3><i class="fas fa-folder-open"></i> 上传训练数据集</h3>
-                        <p class="hint">上传包含多个故障类型的数据集（用于模型训练）</p>
+                        <p class="hint">上传包含多个故障类型的数据集（用于模型训练和推理）</p>
                         <input type="text" id="dataset-name" placeholder="数据集名称" class="input-field">
-                        <input type="file" id="dataset-files" accept=".mat" multiple style="display:none">
+                        <input type="file" id="dataset-files" webkitdirectory style="display:none">
+
                         <button class="btn btn-primary" onclick="document.getElementById('dataset-files').click()">
-                            <i class="fas fa-upload"></i> 选择多个文件
+                            <i class="fas fa-folder-open"></i> 选择文件夹
                         </button>
                         <button class="btn btn-success" onclick="uploadDataset()">
                             <i class="fas fa-cloud-upload-alt"></i> 开始上传
@@ -198,6 +199,8 @@
                             <option value="LSTM">LSTM (长短期记忆网络)</option>
                             <option value="GRU">GRU (门控循环单元)</option>
                             <option value="random_forest">Random Forest (随机森林)</option>
+                            <option value="RUL_LSTM">RUL_LSTM</option>
+                            <option value="RUL_CNN">RUL_CNN</option>
                         </select>
                     </div>
 
@@ -308,15 +311,13 @@
                         <label><i class="fas fa-brain"></i> 选择RUL预测模型</label>
                         <select id="rul-model" class="input-field">
                             <option value="">-- 请选择模型 --</option>
-                            <option value="rule-based">基于规则的估算 (无需模型)</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label><i class="fas fa-file"></i> 设备运行数据</label>
-                        <input type="text" id="rul-data-path" class="input-field" 
-                               placeholder="数据文件路径 (.mat)">
-                        <input type="file" id="rul-file" accept=".mat" style="display:none">
+                        <input type="text" id="rul-data-path" class="input-field">
+                        <input type="file" id="rul-file" webkitdirectory style="display:none">
                         <button class="btn btn-secondary" onclick="document.getElementById('rul-file').click()">
                             <i class="fas fa-upload"></i> 上传文件
                         </button>

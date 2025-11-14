@@ -59,6 +59,9 @@ function switchPage(pageName) {
             case 'history':
                 loadHistory();
                 break;
+            case 'rul': 
+                loadRulModels();
+                break;
         }
     }
 }
@@ -187,8 +190,22 @@ async function uploadSingleFile() {
 // 上传数据集
 async function uploadDataset() {
     const fileInput = document.getElementById('dataset-files');
-    const datasetName = document.getElementById('dataset-name').value;
+    const datasetNameInput = document.getElementById('dataset-name'); // 获取输入框元素
+    let datasetName = datasetNameInput.value; // 获取输入框的值
+    
     const files = fileInput.files;
+
+    if (files.length === 0) {
+        alert('请选择一个文件夹'); // 提示语修改
+        return;
+    }
+
+    if (!datasetName && files.length > 0 && files[0].webkitRelativePath) {
+        // files[0].webkitRelativePath 可能是 "MyFolder/file1.txt"
+        // 提取 "MyFolder"
+        datasetName = files[0].webkitRelativePath.split('/')[0];
+        datasetNameInput.value = datasetName; // 将提取的名称填回输入框
+    }
     
     if (!datasetName) {
         alert('请输入数据集名称');
@@ -203,7 +220,7 @@ async function uploadDataset() {
     const formData = new FormData();
     formData.append('dataset_name', datasetName);
     for (let file of files) {
-        formData.append('files[]', file);
+        formData.append('files[]', file, file.webkitRelativePath);
     }
     
     try {
@@ -536,6 +553,51 @@ function showDiagnosisResult(result) {
     `;
     
     resultDiv.style.display = 'block';
+}
+
+async function loadRulModels() {
+    const selectElement = document.getElementById('rul-model');
+
+    try {
+        const response = await fetch(`${API_BASE}/api/models`);
+        
+        if (!response.ok) {
+            console.error('获取模型列表失败:', response.statusText);
+            // 可以在此处向用户显示错误
+            selectElement.options[0].textContent = '加载模型失败!';
+            return;
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.models) {
+            // 过滤出 RUL 相关的模型
+            const rulModels = data.models.filter(model => 
+                model.type === 'RUL_LSTM' || model.type === 'RUL_CNN'
+            );
+
+            // 将模型动态添加到下拉框
+            rulModels.forEach(model => {
+                const option = document.createElement('option');
+                
+                // 'value' 应该是模型路径，因为 /api/predict_rul 接口需要 model_path
+                option.value = model.path; 
+                
+                // 'textContent' 是用户看到的文本
+                const accuracy = (model.accuracy * 100).toFixed(2);
+                option.textContent = `${model.name} (${model.type}, Acc: ${accuracy}%)`;
+                
+                selectElement.appendChild(option);
+            });
+            
+        } else {
+            selectElement.options[0].textContent = '无可用模型';
+            console.error('加载模型数据格式错误:', data.message);
+        }
+
+    } catch (error) {
+        console.error('加载RUL模型时发生网络错误:', error);
+    }
 }
 
 // 上传RUL文件

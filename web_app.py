@@ -16,6 +16,7 @@
 
 # 设置matplotlib后端为非交互式（必须在导入matplotlib之前）
 import matplotlib
+from sklearn.model_selection import train_test_split
 matplotlib.use('Agg')
 
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory, session
@@ -38,7 +39,7 @@ from training_model import training_with_1D_CNN, training_with_LSTM, training_wi
 from diagnosis import diagnosis, result_decode
 from preprocess_train_result import plot_history_curcvs, plot_confusion_matrix, brief_classification_report, plot_metrics
 from utils import generate_md5
-from rul_prediction import predict_rul, training_rul_model
+from rul_prediction import predict_rul, training_rul_model, generate_rul_data
 
 # 导入MySQL认证模块
 from mysql_auth import verify_user, add_user, change_password, delete_user, list_users, init_database
@@ -51,7 +52,7 @@ CORS(app)
 
 # 配置
 app.config['SECRET_KEY'] = 'secret_key'
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 最大上传100MB
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = './uploads'
 app.config['MODEL_FOLDER'] = './models'
 app.config['CACHE_FOLDER'] = './cache'
@@ -242,7 +243,7 @@ def upload_data():
 @app.route('/api/upload_dataset', methods=['POST'])
 @login_required
 def upload_dataset():
-    """上传数据集（多个文件）"""
+    """上传数据集（文件夹）"""
     try:
         if 'files[]' not in request.files:
             return jsonify({'success': False, 'message': '没有文件'})
@@ -252,16 +253,41 @@ def upload_dataset():
         
         # 创建数据集文件夹
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        dataset_dir = os.path.join(app.config['UPLOAD_FOLDER'], f"{timestamp}_{dataset_name}")
+        base_dir = os.path.normpath(app.config['UPLOAD_FOLDER'])
+        dataset_dir = os.path.join(base_dir, f"{timestamp}_{dataset_name}")
         os.makedirs(dataset_dir, exist_ok=True)
         
         uploaded_files = []
         for file in files:
-            if file and file.filename.endswith('.mat'):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(dataset_dir, filename)
-                file.save(filepath)
-                uploaded_files.append(filename)
+            # 检查文件是否存在
+            if not file or not file.filename:
+                continue
+
+            # file.filename 现在是相对路径，例如 "MyFolder/data/train.mat"
+            relative_path = file.filename
+            
+            # 提取原始目录和文件名
+            original_dir = os.path.dirname(relative_path)
+            original_filename = os.path.basename(relative_path)
+
+            # 清理文件名（防止恶意文件名，如 "file.exe.mat"）
+            safe_filename = secure_filename(original_filename)
+
+            # 构建安全的目标目录路径
+            target_dir = os.path.join(dataset_dir, original_dir)
+
+            #  规范化路径（解析 ".." 等）
+            safe_target_dir = os.path.normpath(target_dir)
+
+            # 创建目标目录（如果不存在）
+            os.makedirs(safe_target_dir, exist_ok=True)
+            
+            # 保存文件
+            filepath = os.path.join(safe_target_dir, safe_filename)
+            file.save(filepath)
+            
+            # 记录保存的相对路径（相对于 dataset_dir）
+            uploaded_files.append(os.path.join(original_dir, safe_filename))
         
         return jsonify({
             'success': True,
@@ -277,17 +303,34 @@ def train_model_thread(task_id, model_type, data_path, params):
     """模型训练线程函数"""
     try:
         training_tasks[task_id]['status'] = 'running'
-        training_tasks[task_id]['message'] = '正在训练模型...'
+        training_tasks[task_id]['message'] = '正在处理数据...'
         
+        scaler_info = None
         # 数据预处理
-        X_train, y_train, X_valid, y_valid, X_test, y_test, scaler_info = training_stage_prepro(
-            data_path,
-            signal_length=params['signal_length'],
-            signal_number=params['signal_number'],
-            normal=params['normal'],
-            rate=params['rate'],
-            enhance=params.get('enhance', False)
-        )
+        if model_type != 'RUL_LSTM' and model_type != 'RUL_CNN':
+            X_train, y_train, X_valid, y_valid, X_test, y_test, scaler_info = training_stage_prepro(
+                data_path,
+                signal_length=params['signal_length'],
+                signal_number=params['signal_number'],
+                normal=params['normal'],
+                rate=params['rate'],
+                enhance=params.get('enhance', False)
+            )
+        else :
+            # ========== 生成数据 ==========
+            X, y = generate_rul_data(data_path, params['signal_length'])
+            if params['signal_number'] is not None:
+                X = X[:min(len(X), params['signal_number'])]
+                y = y[:min(len(y), params['signal_number'])]
+            
+            # ========== 划分数据集 ==========
+            X_temp, X_test, y_temp, y_test = train_test_split(
+                X, y, test_size=params['rate'][1], random_state=42
+            )
+
+            X_train, X_valid, y_train, y_valid = train_test_split(
+                X_temp, y_temp, test_size=params['rate'][2], random_state=42
+            )
         
         training_tasks[task_id]['message'] = '数据预处理完成，开始训练...'
         
@@ -318,6 +361,22 @@ def train_model_thread(task_id, model_type, data_path, params):
                 X_train, y_train, X_valid, y_valid, X_test, y_test
             )
             history = None
+        elif model_type == 'RUL_LSTM':
+            model, history, score = training_rul_model(
+                X_train, y_train, X_valid, y_valid, X_test, y_test,
+                model_type='LSTM',
+                batch_size=params['batch_size'],
+                epochs=params['epochs'],
+                learn_rate=0.001,
+            )
+        elif model_type == 'RUL_CNN':
+            model, history, score = training_rul_model(
+                X_train, y_train, X_valid, y_valid, X_test, y_test,
+                model_type='CNN',
+                batch_size=params['batch_size'],
+                epochs=params['epochs'],
+                learn_rate=0.001,
+            )
         else:
             raise ValueError(f"不支持的模型类型: {model_type}")
         
@@ -327,11 +386,14 @@ def train_model_thread(task_id, model_type, data_path, params):
         cache_path = os.path.join(app.config['CACHE_FOLDER'], task_id)
         os.makedirs(cache_path, exist_ok=True)
         
-        if model_type != 'random_forest':
+        classification_report = None
+        if model_type != 'random_forest' and model_type != 'RUL_LSTM' and model_type != 'RUL_CNN':
             plot_history_curcvs(history, cache_path, model_type)
             plot_confusion_matrix(model, model_type, cache_path, X_test, y_test)
             classification_report = brief_classification_report(model, model_type, X_test, y_test)
             plot_metrics(model, model_type, cache_path, X_test, y_test)
+        elif model_type == 'RUL_LSTM' or model_type == 'RUL_CNN':
+            plot_history_curcvs(history, cache_path, model_type)
         else:
             plot_confusion_matrix(model, model_type, cache_path, X_test_feature, y_test)
             classification_report = brief_classification_report(model, model_type, X_test_feature, y_test)
@@ -352,8 +414,6 @@ def train_model_thread(task_id, model_type, data_path, params):
         config_path = os.path.join(app.config['MODEL_FOLDER'], f'{model_filename}.json')
         md5 = generate_md5(model_path)
         model_config = {
-            'mean': scaler_info['mean'],
-            'std': scaler_info['std'],
             'md5': md5,
             'model_type': model_type,
             'signal_length': params['signal_length'],
@@ -361,6 +421,11 @@ def train_model_thread(task_id, model_type, data_path, params):
             'train_time': timestamp,
             'test_accuracy': score[1] if isinstance(score, list) else score
         }
+
+        # 只有非RUL模型才保存mean/std
+        if scaler_info is not None:
+            model_config['mean'] = scaler_info['mean']
+            model_config['std'] = scaler_info['std']
         with open(config_path, 'w') as f:
             json.dump(model_config, f, indent=2)
         
@@ -412,6 +477,14 @@ def train_model():
                 'rate': [0.6, 0.2, 0.2],
                 'batch_size': 128,
                 'epochs': 1
+            }
+        elif model_type == 'RUL_LSTM' or model_type == 'RUL_CNN':
+            params = {
+                'signal_length': data.get('signal_length', 2048),
+                'signal_number': data.get('signal_number', 1000),
+                'rate': [0.6, 0.2, 0.2],
+                'batch_size': data.get('batch_size', 32),
+                'epochs': data.get('epochs', 50)
             }
         else:
             params = {
