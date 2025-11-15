@@ -187,24 +187,22 @@ async function uploadSingleFile() {
     }
 }
 
-// 上传数据集
+// 上传数据集（支持自动分批）
 async function uploadDataset() {
     const fileInput = document.getElementById('dataset-files');
-    const datasetNameInput = document.getElementById('dataset-name'); // 获取输入框元素
-    let datasetName = datasetNameInput.value; // 获取输入框的值
+    const datasetNameInput = document.getElementById('dataset-name');
+    let datasetName = datasetNameInput.value;
     
-    const files = fileInput.files;
+    const files = Array.from(fileInput.files);
 
     if (files.length === 0) {
-        alert('请选择一个文件夹'); // 提示语修改
+        alert('请选择一个文件夹');
         return;
     }
 
     if (!datasetName && files.length > 0 && files[0].webkitRelativePath) {
-        // files[0].webkitRelativePath 可能是 "MyFolder/file1.txt"
-        // 提取 "MyFolder"
         datasetName = files[0].webkitRelativePath.split('/')[0];
-        datasetNameInput.value = datasetName; // 将提取的名称填回输入框
+        datasetNameInput.value = datasetName;
     }
     
     if (!datasetName) {
@@ -212,85 +210,161 @@ async function uploadDataset() {
         return;
     }
     
-    if (files.length === 0) {
-        alert('请选择文件');
-        return;
-    }
-    
     // 显示上传进度
     const infoDiv = document.getElementById('dataset-files-info');
     const originalContent = infoDiv.innerHTML;
-    infoDiv.innerHTML = `
-        <div style="margin-top: 10px;">
-            <p><i class="fas fa-spinner fa-spin"></i> 正在上传 ${files.length} 个文件，请稍候...</p>
-            <div style="background: #f0f0f0; border-radius: 4px; height: 20px; margin-top: 10px; overflow: hidden;">
-                <div id="upload-progress" style="background: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s;"></div>
-            </div>
-            <p id="upload-status" style="margin-top: 5px; font-size: 12px; color: #666;">准备上传...</p>
-        </div>
-    `;
-    
-    const formData = new FormData();
-    formData.append('dataset_name', datasetName);
     
     // 计算总大小
     let totalSize = 0;
     for (let file of files) {
         totalSize += file.size;
-        formData.append('files[]', file, file.webkitRelativePath);
     }
     
-    // 创建AbortController用于超时控制
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000); // 30分钟超时
+    // 每批最多500个文件
+    const MAX_FILES_PER_BATCH = 500;
+    const totalBatches = Math.ceil(files.length / MAX_FILES_PER_BATCH);
+    const needsBatching = files.length > MAX_FILES_PER_BATCH;
+    
+    // 显示上传界面
+    infoDiv.innerHTML = `
+        <div style="margin-top: 10px;">
+            <p><i class="fas fa-spinner fa-spin"></i> 正在上传 ${files.length} 个文件${needsBatching ? `（自动分为 ${totalBatches} 批）` : ''}，请稍候...</p>
+            <div style="background: #f0f0f0; border-radius: 4px; height: 20px; margin-top: 10px; overflow: hidden;">
+                <div id="upload-progress" style="background: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s;"></div>
+            </div>
+            <p id="upload-status" style="margin-top: 5px; font-size: 12px; color: #666;">准备上传...</p>
+            ${needsBatching ? `<p id="batch-status" style="margin-top: 5px; font-size: 12px; color: #888;">批次进度: 0/${totalBatches}</p>` : ''}
+        </div>
+    `;
+    
+    let datasetDir = null;
+    let totalUploaded = 0;
+    let totalFailed = 0;
+    const allFailedFiles = [];
     
     try {
-        // 更新状态
-        document.getElementById('upload-status').textContent = `正在上传 ${formatFileSize(totalSize)}...`;
-        
-        const response = await fetch(`${API_BASE}/api/upload_dataset`, {
-            method: 'POST',
-            body: formData,
-            signal: controller.signal,
-            // 不设置超时，让服务器处理
-        });
-        
-        clearTimeout(timeoutId);
-        
-        // 更新进度
-        document.getElementById('upload-progress').style.width = '100%';
-        document.getElementById('upload-status').textContent = '正在处理响应...';
-        
-        if (!response.ok) {
-            throw new Error(`HTTP错误: ${response.status} ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            infoDiv.innerHTML = originalContent + `
-                <div style="color: var(--success-color); margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 4px;">
-                    <i class="fas fa-check-circle"></i> <strong>上传成功！</strong><br>
-                    数据集路径: ${result.dataset_path}<br>
-                    成功上传: ${result.files ? result.files.length : files.length} 个文件
-                    ${result.failed_files && result.failed_files.length > 0 ? `<br><span style="color: var(--warning-color);">失败: ${result.failed_files.length} 个文件</span>` : ''}
-                </div>
-            `;
-            // 自动填充到训练页面
-            if (document.getElementById('training-data-path')) {
-                document.getElementById('training-data-path').value = result.dataset_path;
+        // 分批上传
+        for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+            const startIdx = batchIndex * MAX_FILES_PER_BATCH;
+            const endIdx = Math.min(startIdx + MAX_FILES_PER_BATCH, files.length);
+            const batchFiles = files.slice(startIdx, endIdx);
+            
+            // 更新批次状态和进度
+            if (needsBatching) {
+                document.getElementById('batch-status').textContent = 
+                    `批次进度: ${batchIndex + 1}/${totalBatches} (${startIdx + 1}-${endIdx}/${files.length} 个文件)`;
             }
-        } else {
-            throw new Error(result.message || '上传失败');
+            
+            // 更新总体进度（基于已完成的批次）
+            const overallProgress = (batchIndex / totalBatches) * 100;
+            document.getElementById('upload-progress').style.width = overallProgress + '%';
+            document.getElementById('upload-status').textContent = 
+                `正在上传第 ${batchIndex + 1}/${totalBatches} 批 (${batchFiles.length} 个文件)...`;
+            
+            // 创建表单数据
+            const formData = new FormData();
+            formData.append('dataset_name', datasetName);
+            
+            // 如果已有数据集目录，使用它（合并批次）
+            if (datasetDir) {
+                formData.append('dataset_dir', datasetDir);
+            }
+            
+            // 添加本批文件
+            for (let file of batchFiles) {
+                formData.append('files[]', file, file.webkitRelativePath);
+            }
+            
+            // 创建AbortController用于超时控制
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000);
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/upload_dataset`, {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal,
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status} ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 保存数据集目录（第一次）
+                    if (!datasetDir) {
+                        datasetDir = result.dataset_path;
+                    }
+                    
+                    // 累计统计
+                    totalUploaded += result.total_uploaded || result.files.length;
+                    totalFailed += result.total_failed || (result.failed_files ? result.failed_files.length : 0);
+                    
+                    if (result.failed_files) {
+                        allFailedFiles.push(...result.failed_files);
+                    }
+                    
+                    // 更新进度（批次完成）
+                    const completedProgress = ((batchIndex + 1) / totalBatches) * 100;
+                    document.getElementById('upload-progress').style.width = completedProgress + '%';
+                } else {
+                    throw new Error(result.message || '上传失败');
+                }
+            } catch (error) {
+                clearTimeout(timeoutId);
+                
+                // 记录本批失败的文件
+                for (let file of batchFiles) {
+                    allFailedFiles.push({
+                        filename: file.name || file.webkitRelativePath,
+                        error: error.message || '上传失败'
+                    });
+                }
+                
+                // 如果是网络错误，停止后续批次
+                if (error.name === 'AbortError' || error.message.includes('Failed to fetch')) {
+                    throw error;
+                }
+                
+                // 其他错误继续下一批
+                console.error(`批次 ${batchIndex + 1} 上传失败:`, error);
+            }
         }
-    } catch (error) {
-        clearTimeout(timeoutId);
         
+        // 所有批次完成
+        document.getElementById('upload-progress').style.width = '100%';
+        document.getElementById('upload-status').textContent = '上传完成！';
+        if (needsBatching) {
+            document.getElementById('batch-status').textContent = `所有批次完成: ${totalBatches}/${totalBatches}`;
+        }
+        
+        // 显示最终结果
+        infoDiv.innerHTML = originalContent + `
+            <div style="color: var(--success-color); margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 4px;">
+                <i class="fas fa-check-circle"></i> <strong>上传完成！</strong><br>
+                数据集路径: ${datasetDir}<br>
+                总文件数: ${files.length} 个<br>
+                成功上传: ${totalUploaded} 个文件
+                ${totalFailed > 0 ? `<br><span style="color: var(--warning-color);">失败: ${totalFailed} 个文件</span>` : ''}
+                ${needsBatching ? `<br><small style="color: #666;">已自动分为 ${totalBatches} 批上传</small>` : ''}
+            </div>
+        `;
+        
+        // 自动填充到训练页面
+        if (document.getElementById('training-data-path')) {
+            document.getElementById('training-data-path').value = datasetDir;
+        }
+        
+    } catch (error) {
         let errorMessage = '上传失败: ';
         if (error.name === 'AbortError') {
-            errorMessage += '请求超时（超过30分钟）。文件数量较多，建议分批上传或使用压缩包。';
+            errorMessage += '请求超时（超过30分钟）。';
         } else if (error.message.includes('Failed to fetch')) {
-            errorMessage += '网络连接失败。请检查网络连接或服务器状态。如果文件较大，请尝试分批上传。';
+            errorMessage += '网络连接失败。请检查网络连接或服务器状态。';
         } else {
             errorMessage += error.message;
         }
@@ -298,7 +372,7 @@ async function uploadDataset() {
         infoDiv.innerHTML = originalContent + `
             <div style="color: var(--danger-color); margin-top: 10px; padding: 10px; background: #fff5f5; border-radius: 4px;">
                 <i class="fas fa-exclamation-circle"></i> <strong>${errorMessage}</strong><br>
-                <small>提示：对于大量文件（>1000个），建议分批上传或使用压缩包上传后解压。</small>
+                ${totalUploaded > 0 ? `<small>已成功上传 ${totalUploaded} 个文件，失败 ${totalFailed} 个文件</small>` : ''}
             </div>
         `;
     }

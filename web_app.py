@@ -23,10 +23,9 @@ from flask import Flask, render_template, request, jsonify, send_file, send_from
 from flask_cors import CORS
 import os
 import json
-# 延迟导入大型库，减少启动时的内存占用
-# import torch  # 延迟导入
-# import joblib  # 延迟导入
-# import numpy as np  # 延迟导入
+import torch
+import joblib
+import numpy as np
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import threading
@@ -34,13 +33,13 @@ import uuid
 import shutil
 from functools import wraps
 
-# 延迟导入项目模块（避免启动时加载所有依赖）
-# from data_preprocess import training_stage_prepro, diagnosis_stage_prepro
-# from training_model import training_with_1D_CNN, training_with_LSTM, training_with_GRU, training_with_random_forest
-# from diagnosis import diagnosis, result_decode
-# from preprocess_train_result import plot_history_curcvs, plot_confusion_matrix, brief_classification_report, plot_metrics
-# from utils import generate_md5
-# from rul_prediction import predict_rul, training_rul_model, generate_rul_data
+# 导入项目模块
+from data_preprocess import training_stage_prepro, diagnosis_stage_prepro
+from training_model import training_with_1D_CNN, training_with_LSTM, training_with_GRU, training_with_random_forest
+from diagnosis import diagnosis, result_decode
+from preprocess_train_result import plot_history_curcvs, plot_confusion_matrix, brief_classification_report, plot_metrics
+from utils import generate_md5
+from rul_prediction import predict_rul, training_rul_model, generate_rul_data
 
 # 导入MySQL认证模块
 from mysql_auth import verify_user, add_user, change_password, delete_user, list_users, init_database
@@ -283,17 +282,27 @@ def upload_dataset():
         
         # 限制单次上传文件数量，防止内存溢出
         MAX_FILES_PER_UPLOAD = 500
-        if len(files) > MAX_FILES_PER_UPLOAD:
+        
+        # 检查是否指定了数据集目录（用于分批上传合并）
+        existing_dataset_dir = request.form.get('dataset_dir', None)
+        is_batch_upload = existing_dataset_dir and os.path.exists(existing_dataset_dir)
+        
+        if is_batch_upload:
+            # 使用已存在的数据集目录（分批上传）
+            dataset_dir = existing_dataset_dir
+        else:
+            # 创建新的数据集文件夹
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            base_dir = os.path.normpath(app.config['UPLOAD_FOLDER'])
+            dataset_dir = os.path.join(base_dir, f"{timestamp}_{dataset_name}")
+            os.makedirs(dataset_dir, exist_ok=True)
+        
+        # 如果文件数量超过限制，且不是分批上传，则拒绝（前端会自动分批）
+        if len(files) > MAX_FILES_PER_UPLOAD and not is_batch_upload:
             return jsonify({
                 'success': False,
-                'message': f'文件数量过多 ({len(files)} 个)。单次最多上传 {MAX_FILES_PER_UPLOAD} 个文件。请分批上传。'
+                'message': f'文件数量过多 ({len(files)} 个)。单次最多上传 {MAX_FILES_PER_UPLOAD} 个文件。系统将自动分批上传。'
             }), 413
-        
-        # 创建数据集文件夹
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        base_dir = os.path.normpath(app.config['UPLOAD_FOLDER'])
-        dataset_dir = os.path.join(base_dir, f"{timestamp}_{dataset_name}")
-        os.makedirs(dataset_dir, exist_ok=True)
         
         uploaded_files = []
         failed_files = []
@@ -367,7 +376,9 @@ def upload_dataset():
             'message': message,
             'dataset_path': dataset_dir,
             'files': uploaded_files,
-            'failed_files': failed_files if failed_files else None
+            'failed_files': failed_files if failed_files else None,
+            'total_uploaded': len(uploaded_files),
+            'total_failed': len(failed_files)
         })
     except MemoryError:
         return jsonify({
@@ -380,16 +391,6 @@ def upload_dataset():
 # ==================== API：模型训练 ====================
 def train_model_thread(task_id, model_type, data_path, params):
     """模型训练线程函数"""
-    # 延迟导入，只在需要时加载
-    from data_preprocess import training_stage_prepro, diagnosis_stage_prepro
-    from training_model import training_with_1D_CNN, training_with_LSTM, training_with_GRU, training_with_random_forest
-    from preprocess_train_result import plot_history_curcvs, plot_confusion_matrix, brief_classification_report, plot_metrics
-    from utils import generate_md5
-    from rul_prediction import predict_rul, training_rul_model, generate_rul_data
-    import torch
-    import joblib
-    from sklearn.model_selection import train_test_split
-    
     try:
         training_tasks[task_id]['status'] = 'running'
         training_tasks[task_id]['message'] = '正在处理数据...'
@@ -629,10 +630,6 @@ def training_status(task_id):
 # ==================== API：故障诊断 ====================
 def diagnose_thread(task_id, model_path, data_path):
     """诊断线程函数"""
-    # 延迟导入，只在需要时加载
-    from data_preprocess import diagnosis_stage_prepro
-    from diagnosis import diagnosis, result_decode
-    
     try:
         diagnosis_tasks[task_id]['status'] = 'running'
         diagnosis_tasks[task_id]['message'] = '正在进行诊断...'
@@ -737,9 +734,6 @@ def diagnosis_status(task_id):
 # ==================== API：剩余寿命预测 ====================
 def rul_prediction_thread(task_id, model_path, data_path):
     """RUL预测线程函数"""
-    # 延迟导入，只在需要时加载
-    from rul_prediction import predict_rul
-    
     try:
         rul_tasks[task_id]['status'] = 'running'
         rul_tasks[task_id]['message'] = '正在预测剩余寿命...'
@@ -995,6 +989,11 @@ if __name__ == '__main__':
     轴承故障诊断与剩余寿命预测 Web 服务
     ============================================================
     服务器地址: http://localhost:5000
+    
+    重要提示:
+    - 单次最多上传 500 个文件（防止内存溢出）
+    - 对于大量文件，请分批上传
+    - 建议使用 Gunicorn 等生产级服务器部署
     ============================================================
     """)
     app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False, threaded=True)
