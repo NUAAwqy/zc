@@ -23,9 +23,10 @@ from flask import Flask, render_template, request, jsonify, send_file, send_from
 from flask_cors import CORS
 import os
 import json
-import torch
-import joblib
-import numpy as np
+# 延迟导入大型库，减少启动时的内存占用
+# import torch  # 延迟导入
+# import joblib  # 延迟导入
+# import numpy as np  # 延迟导入
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import threading
@@ -33,13 +34,13 @@ import uuid
 import shutil
 from functools import wraps
 
-# 导入项目模块
-from data_preprocess import training_stage_prepro, diagnosis_stage_prepro
-from training_model import training_with_1D_CNN, training_with_LSTM, training_with_GRU, training_with_random_forest
-from diagnosis import diagnosis, result_decode
-from preprocess_train_result import plot_history_curcvs, plot_confusion_matrix, brief_classification_report, plot_metrics
-from utils import generate_md5
-from rul_prediction import predict_rul, training_rul_model, generate_rul_data
+# 延迟导入项目模块（避免启动时加载所有依赖）
+# from data_preprocess import training_stage_prepro, diagnosis_stage_prepro
+# from training_model import training_with_1D_CNN, training_with_LSTM, training_with_GRU, training_with_random_forest
+# from diagnosis import diagnosis, result_decode
+# from preprocess_train_result import plot_history_curcvs, plot_confusion_matrix, brief_classification_report, plot_metrics
+# from utils import generate_md5
+# from rul_prediction import predict_rul, training_rul_model, generate_rul_data
 
 # 导入MySQL认证模块
 from mysql_auth import verify_user, add_user, change_password, delete_user, list_users, init_database
@@ -52,7 +53,8 @@ CORS(app)
 
 # 配置
 app.config['SECRET_KEY'] = 'secret_key'
-app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024 * 1024
+# 设置最大上传大小为50GB（支持大文件上传）
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = './uploads'
 app.config['MODEL_FOLDER'] = './models'
 app.config['CACHE_FOLDER'] = './cache'
@@ -244,12 +246,48 @@ def upload_data():
 @login_required
 def upload_dataset():
     """上传数据集（文件夹）"""
+    import gc  # 用于垃圾回收
+    import psutil  # 用于内存监控（如果可用）
+    
     try:
+        # 检查请求大小
+        if request.content_length and request.content_length > app.config['MAX_CONTENT_LENGTH']:
+            return jsonify({
+                'success': False, 
+                'message': f'上传失败: 数据大小 ({request.content_length / (1024*1024):.2f} MB) 超过限制 ({app.config["MAX_CONTENT_LENGTH"] / (1024*1024*1024):.2f} GB)。请尝试分批上传。'
+            }), 413
+        
+        # 检查内存使用（如果可用）
+        try:
+            import psutil
+            process = psutil.Process()
+            memory_info = process.memory_info()
+            memory_mb = memory_info.rss / (1024 * 1024)
+            # 如果内存使用超过2GB，警告
+            if memory_mb > 2048:
+                return jsonify({
+                    'success': False,
+                    'message': f'服务器内存使用过高 ({memory_mb:.0f} MB)。请尝试分批上传或稍后重试。'
+                }), 503
+        except ImportError:
+            pass  # psutil不可用，跳过检查
+        
         if 'files[]' not in request.files:
             return jsonify({'success': False, 'message': '没有文件'})
         
         files = request.files.getlist('files[]')
         dataset_name = request.form.get('dataset_name', 'dataset')
+        
+        if not files or len(files) == 0:
+            return jsonify({'success': False, 'message': '没有选择文件'})
+        
+        # 限制单次上传文件数量，防止内存溢出
+        MAX_FILES_PER_UPLOAD = 500
+        if len(files) > MAX_FILES_PER_UPLOAD:
+            return jsonify({
+                'success': False,
+                'message': f'文件数量过多 ({len(files)} 个)。单次最多上传 {MAX_FILES_PER_UPLOAD} 个文件。请分批上传。'
+            }), 413
         
         # 创建数据集文件夹
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -258,49 +296,100 @@ def upload_dataset():
         os.makedirs(dataset_dir, exist_ok=True)
         
         uploaded_files = []
-        for file in files:
-            # 检查文件是否存在
-            if not file or not file.filename:
-                continue
+        failed_files = []
+        
+        # 流式处理文件，逐个保存，避免全部加载到内存
+        for idx, file in enumerate(files):
+            try:
+                # 检查文件是否存在
+                if not file or not file.filename:
+                    continue
 
-            # file.filename 现在是相对路径，例如 "MyFolder/data/train.mat"
-            relative_path = file.filename
-            
-            # 提取原始目录和文件名
-            original_dir = os.path.dirname(relative_path)
-            original_filename = os.path.basename(relative_path)
+                # file.filename 现在是相对路径，例如 "MyFolder/data/train.mat"
+                relative_path = file.filename
+                
+                # 提取原始目录和文件名
+                original_dir = os.path.dirname(relative_path)
+                original_filename = os.path.basename(relative_path)
 
-            # 清理文件名（防止恶意文件名，如 "file.exe.mat"）
-            safe_filename = secure_filename(original_filename)
+                # 清理文件名（防止恶意文件名，如 "file.exe.mat"）
+                safe_filename = secure_filename(original_filename)
 
-            # 构建安全的目标目录路径
-            target_dir = os.path.join(dataset_dir, original_dir)
+                # 构建安全的目标目录路径
+                target_dir = os.path.join(dataset_dir, original_dir)
 
-            #  规范化路径（解析 ".." 等）
-            safe_target_dir = os.path.normpath(target_dir)
+                #  规范化路径（解析 ".." 等）
+                safe_target_dir = os.path.normpath(target_dir)
 
-            # 创建目标目录（如果不存在）
-            os.makedirs(safe_target_dir, exist_ok=True)
-            
-            # 保存文件
-            filepath = os.path.join(safe_target_dir, safe_filename)
-            file.save(filepath)
-            
-            # 记录保存的相对路径（相对于 dataset_dir）
-            uploaded_files.append(os.path.join(original_dir, safe_filename))
+                # 创建目标目录（如果不存在）
+                os.makedirs(safe_target_dir, exist_ok=True)
+                
+                # 保存文件（流式写入，不全部加载到内存）
+                filepath = os.path.join(safe_target_dir, safe_filename)
+                file.save(filepath)
+                
+                # 记录保存的相对路径（相对于 dataset_dir）
+                uploaded_files.append(os.path.join(original_dir, safe_filename))
+                
+                # 每处理100个文件，强制垃圾回收一次，释放内存
+                if (idx + 1) % 100 == 0:
+                    gc.collect()
+                    
+            except MemoryError:
+                failed_files.append({
+                    'filename': file.filename if file else 'unknown',
+                    'error': '内存不足'
+                })
+                # 内存不足，停止处理
+                break
+            except Exception as file_error:
+                failed_files.append({
+                    'filename': file.filename if file else 'unknown',
+                    'error': str(file_error)
+                })
+        
+        # 最后进行一次垃圾回收
+        gc.collect()
+        
+        if len(uploaded_files) == 0:
+            return jsonify({
+                'success': False,
+                'message': '没有文件成功上传',
+                'failed_files': failed_files
+            })
+        
+        message = f'成功上传{len(uploaded_files)}个文件'
+        if failed_files:
+            message += f'，{len(failed_files)}个文件上传失败'
         
         return jsonify({
             'success': True,
-            'message': f'成功上传{len(uploaded_files)}个文件',
+            'message': message,
             'dataset_path': dataset_dir,
-            'files': uploaded_files
+            'files': uploaded_files,
+            'failed_files': failed_files if failed_files else None
         })
+    except MemoryError:
+        return jsonify({
+            'success': False,
+            'message': '上传失败: 服务器内存不足。请尝试分批上传（每次不超过500个文件）。'
+        }), 507
     except Exception as e:
         return jsonify({'success': False, 'message': f'上传失败: {str(e)}'})
 
 # ==================== API：模型训练 ====================
 def train_model_thread(task_id, model_type, data_path, params):
     """模型训练线程函数"""
+    # 延迟导入，只在需要时加载
+    from data_preprocess import training_stage_prepro, diagnosis_stage_prepro
+    from training_model import training_with_1D_CNN, training_with_LSTM, training_with_GRU, training_with_random_forest
+    from preprocess_train_result import plot_history_curcvs, plot_confusion_matrix, brief_classification_report, plot_metrics
+    from utils import generate_md5
+    from rul_prediction import predict_rul, training_rul_model, generate_rul_data
+    import torch
+    import joblib
+    from sklearn.model_selection import train_test_split
+    
     try:
         training_tasks[task_id]['status'] = 'running'
         training_tasks[task_id]['message'] = '正在处理数据...'
@@ -540,6 +629,10 @@ def training_status(task_id):
 # ==================== API：故障诊断 ====================
 def diagnose_thread(task_id, model_path, data_path):
     """诊断线程函数"""
+    # 延迟导入，只在需要时加载
+    from data_preprocess import diagnosis_stage_prepro
+    from diagnosis import diagnosis, result_decode
+    
     try:
         diagnosis_tasks[task_id]['status'] = 'running'
         diagnosis_tasks[task_id]['message'] = '正在进行诊断...'
@@ -644,6 +737,9 @@ def diagnosis_status(task_id):
 # ==================== API：剩余寿命预测 ====================
 def rul_prediction_thread(task_id, model_path, data_path):
     """RUL预测线程函数"""
+    # 延迟导入，只在需要时加载
+    from rul_prediction import predict_rul
+    
     try:
         rul_tasks[task_id]['status'] = 'running'
         rul_tasks[task_id]['message'] = '正在预测剩余寿命...'
@@ -863,8 +959,37 @@ def download_model(model_id):
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+# ==================== 错误处理 ====================
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    """处理413错误（请求实体过大）"""
+    return jsonify({
+        'success': False, 
+        'message': '上传失败: 文件大小超过限制。请尝试分批上传或联系管理员增加上传限制。'
+    }), 413
+
+@app.errorhandler(500)
+def internal_error(error):
+    """处理500错误"""
+    return jsonify({
+        'success': False,
+        'message': f'服务器内部错误: {str(error)}'
+    }), 500
+
 # ==================== 启动服务器 ====================
 if __name__ == '__main__':
+    # 检查内存（如果可用）
+    try:
+        import psutil
+        process = psutil.Process()
+        memory_info = process.memory_info()
+        memory_mb = memory_info.rss / (1024 * 1024)
+        print(f"当前内存使用: {memory_mb:.0f} MB")
+    except ImportError:
+        print("提示: 安装 psutil 可以监控内存使用: pip install psutil")
+    except Exception:
+        pass
+    
     print("""
     ============================================================
     轴承故障诊断与剩余寿命预测 Web 服务

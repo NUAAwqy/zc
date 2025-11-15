@@ -512,7 +512,9 @@ def get_health_status(health_index):
         return "严重故障"
 
 
-model_path = 'models/RUL_CNN_20251114_172031.pth'
-data_path = 'uploads/Test_dataset/bearing1_3'
-result = predict_rul(model_path, data_path)
-print(result)
+# 测试代码：只有在直接运行此文件时才会执行
+if __name__ == '__main__':
+    model_path = 'models/RUL_CNN_20251114_172031.pth'
+    data_path = 'uploads/Test_dataset/bearing1_3'
+    result = predict_rul(model_path, data_path)
+    print(result)

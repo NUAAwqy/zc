@@ -217,35 +217,90 @@ async function uploadDataset() {
         return;
     }
     
+    // 显示上传进度
+    const infoDiv = document.getElementById('dataset-files-info');
+    const originalContent = infoDiv.innerHTML;
+    infoDiv.innerHTML = `
+        <div style="margin-top: 10px;">
+            <p><i class="fas fa-spinner fa-spin"></i> 正在上传 ${files.length} 个文件，请稍候...</p>
+            <div style="background: #f0f0f0; border-radius: 4px; height: 20px; margin-top: 10px; overflow: hidden;">
+                <div id="upload-progress" style="background: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s;"></div>
+            </div>
+            <p id="upload-status" style="margin-top: 5px; font-size: 12px; color: #666;">准备上传...</p>
+        </div>
+    `;
+    
     const formData = new FormData();
     formData.append('dataset_name', datasetName);
+    
+    // 计算总大小
+    let totalSize = 0;
     for (let file of files) {
+        totalSize += file.size;
         formData.append('files[]', file, file.webkitRelativePath);
     }
     
+    // 创建AbortController用于超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000); // 30分钟超时
+    
     try {
+        // 更新状态
+        document.getElementById('upload-status').textContent = `正在上传 ${formatFileSize(totalSize)}...`;
+        
         const response = await fetch(`${API_BASE}/api/upload_dataset`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            signal: controller.signal,
+            // 不设置超时，让服务器处理
         });
+        
+        clearTimeout(timeoutId);
+        
+        // 更新进度
+        document.getElementById('upload-progress').style.width = '100%';
+        document.getElementById('upload-status').textContent = '正在处理响应...';
+        
+        if (!response.ok) {
+            throw new Error(`HTTP错误: ${response.status} ${response.statusText}`);
+        }
         
         const result = await response.json();
         
         if (result.success) {
-            alert(`上传成功！数据集路径: ${result.dataset_path}`);
-            document.getElementById('dataset-files-info').innerHTML += `
-                <p style="color: var(--success-color); margin-top: 10px;">
-                    <i class="fas fa-check-circle"></i> 数据集已保存<br>
-                    路径: ${result.dataset_path}
-                </p>
+            infoDiv.innerHTML = originalContent + `
+                <div style="color: var(--success-color); margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 4px;">
+                    <i class="fas fa-check-circle"></i> <strong>上传成功！</strong><br>
+                    数据集路径: ${result.dataset_path}<br>
+                    成功上传: ${result.files ? result.files.length : files.length} 个文件
+                    ${result.failed_files && result.failed_files.length > 0 ? `<br><span style="color: var(--warning-color);">失败: ${result.failed_files.length} 个文件</span>` : ''}
+                </div>
             `;
             // 自动填充到训练页面
-            document.getElementById('training-data-path').value = result.dataset_path;
+            if (document.getElementById('training-data-path')) {
+                document.getElementById('training-data-path').value = result.dataset_path;
+            }
         } else {
-            alert('上传失败: ' + result.message);
+            throw new Error(result.message || '上传失败');
         }
     } catch (error) {
-        alert('上传失败: ' + error.message);
+        clearTimeout(timeoutId);
+        
+        let errorMessage = '上传失败: ';
+        if (error.name === 'AbortError') {
+            errorMessage += '请求超时（超过30分钟）。文件数量较多，建议分批上传或使用压缩包。';
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMessage += '网络连接失败。请检查网络连接或服务器状态。如果文件较大，请尝试分批上传。';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        infoDiv.innerHTML = originalContent + `
+            <div style="color: var(--danger-color); margin-top: 10px; padding: 10px; background: #fff5f5; border-radius: 4px;">
+                <i class="fas fa-exclamation-circle"></i> <strong>${errorMessage}</strong><br>
+                <small>提示：对于大量文件（>1000个），建议分批上传或使用压缩包上传后解压。</small>
+            </div>
+        `;
     }
 }
 
