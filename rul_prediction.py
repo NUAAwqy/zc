@@ -271,7 +271,7 @@ def training_rul_model(X_train, y_train, X_valid, y_valid, X_test, y_test, model
         # 记录历史
         history.update(train_loss, train_acc, val_loss, val_acc)
         
-        # 早停
+        # # 早停
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             patience_counter = 0
@@ -317,7 +317,7 @@ def training_rul_model(X_train, y_train, X_valid, y_valid, X_test, y_test, model
     return model, history, [test_loss, test_acc]
 
 
-def generate_rul_data(json_file_dir, max_sequence_length=None):
+def generate_rul_data(json_file_dir, max_sequence_length=None, sample_length=None):
     """
     生成RUL训练数据，使用累积序列（下三角矩阵形式）
     
@@ -333,7 +333,12 @@ def generate_rul_data(json_file_dir, max_sequence_length=None):
     labels = []
     max_sequence_length = 50
 
-    json_files = sorted(os.listdir(json_file_dir))
+    if sample_length is not None:
+        sample_length = sample_length
+    else:
+        sample_length = len(os.listdir(json_file_dir))
+
+    json_files = sorted(os.listdir(json_file_dir))[:sample_length]
     for idx, json_file_name in tqdm(enumerate(json_files), desc='Loading JSON files', unit='file', colour='#448844'):
         horizontal_signals = []
         vertical_signals = []
@@ -389,23 +394,29 @@ def predict_rul(model_path, data_path):
     
     # 加载并预处理数据
     TRAINED_SEQUENCE_LENGTH = 50
-    X, y = generate_rul_data(data_path, max_sequence_length=TRAINED_SEQUENCE_LENGTH)
-    input_sequence = X[150, :, :]
+    SAMPLE_LENGTH = 50
+    X, y = generate_rul_data(data_path, max_sequence_length=TRAINED_SEQUENCE_LENGTH, sample_length=SAMPLE_LENGTH)
+    input_sequence = X[-1, :, :]
     input_tensor = torch.FloatTensor(input_sequence).unsqueeze(0).to(device)  # (1, seq_len, features)
 
     # 预测
     with torch.no_grad():
         rul_prediction = model(input_tensor).item()
+
+    # 计算剩余寿命
+    living_time = SAMPLE_LENGTH * 10 / (1 - rul_prediction + 1e-6)
+    rul = (living_time - SAMPLE_LENGTH * 10) / 3600  # 转换为小时
+    rul = int(rul * 100)
     
     # 计算置信度（基于特征的标准差）
     feature_std = np.std(input_sequence, axis=0).mean()
     confidence = max(0.0, min(1.0, 1.0 - feature_std / 10.0))
     
     # 计算健康指数（0-100）
-    health_index = calculate_health_index(input_sequence[-1])
+    health_index = rul_prediction * 100
     
     return {
-        'rul': max(0, rul_prediction),
+        'rul': max(0, rul),
         'confidence': confidence,
         'health_index': health_index,
         'status': get_health_status(health_index)
@@ -490,7 +501,7 @@ def calculate_health_index(features):
     # 正常化各个特征（这里使用经验阈值）
     rms_score = max(0, 100 - features[2] * 100)  # RMS
     peak_score = max(0, 100 - features[3] * 50)   # Peak
-    kurtosis_score = max(0, 100 - abs(features[4] - 3) * 10)  # Kurtosis (正常约为3)
+    kurtosis_score = max(0, 100 - abs(features[4] - 3) * 10)  # Kurtosis
     
     # 加权平均
     health_index = (rms_score * 0.4 + peak_score * 0.3 + kurtosis_score * 0.3)

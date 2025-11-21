@@ -60,6 +60,7 @@ function switchPage(pageName) {
                 loadHistory();
                 break;
             case 'rul': 
+                loadRulDatasets();
                 loadRulModels();
                 break;
         }
@@ -684,8 +685,13 @@ function showDiagnosisResult(result) {
     resultDiv.style.display = 'block';
 }
 
+// 加载RUL模型列表
 async function loadRulModels() {
     const selectElement = document.getElementById('rul-model');
+
+    while (selectElement.options.length > 1) {
+        selectElement.remove(1);
+    }
 
     try {
         const response = await fetch(`${API_BASE}/api/models`);
@@ -729,36 +735,60 @@ async function loadRulModels() {
     }
 }
 
-// 上传RUL文件
-async function uploadRULFile(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    
+// 加载数据集列表
+async function loadRulDatasets() {
+        const selectElement = document.getElementById('rul-dataset');
+
+    while (selectElement.options.length > 1) {
+        selectElement.remove(1);
+    }
+
     try {
-        const response = await fetch(`${API_BASE}/api/upload_data`, {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch(`${API_BASE}/api/load_rul_datasets`);
         
-        const result = await response.json();
-        
-        if (result.success) {
-            document.getElementById('rul-data-path').value = result.filepath;
-        } else {
-            alert('上传失败: ' + result.message);
+        if (!response.ok) {
+            console.error('获取数据列表失败:', response.statusText);
+            // 可以在此处向用户显示错误
+            selectElement.options[0].textContent = '加载数据失败!';
+            return;
         }
+
+        const data = await response.json();
+
+        if (data.success && data.datasets) {
+            // 将数据动态添加到下拉框
+            data.datasets.forEach(dataset => {
+                const option = document.createElement('option');
+                
+                option.value = dataset; 
+                
+                option.textContent = dataset.split('\\').pop();
+                 
+                selectElement.appendChild(option);
+            });
+            
+        } else {
+            selectElement.options[0].textContent = '无可用数据';
+            console.error('加载数据格式错误:', data.message);
+        }
+
     } catch (error) {
-        alert('上传失败: ' + error.message);
+        console.error('加载RUL数据时发生网络错误:', error);
     }
 }
 
 // 开始RUL预测
 async function startRULPrediction() {
     const modelPath = document.getElementById('rul-model').value;
-    const dataPath = document.getElementById('rul-data-path').value;
+    const dataPath = document.getElementById('rul-dataset').value;
+
+    if (!modelPath) {
+        alert('请选择预测模型');
+        return;
+    }
     
     if (!dataPath) {
-        alert('请输入数据文件路径或上传文件');
+        alert('请选择数据文件或上传文件');
         return;
     }
     
@@ -834,9 +864,9 @@ function showRULResult(result) {
     
     contentDiv.innerHTML = `
         <div class="rul-card">
-            <h4>剩余使用寿命</h4>
+            <h4>剩余使用寿命（精确到小时）</h4>
             <div class="value">${result.rul.toFixed(1)}</div>
-            <div class="unit">小时</div>
+            <div class="unit">小时（约）</div>
         </div>
         <div class="rul-card" style="background: linear-gradient(135deg, var(--success-color), var(--info-color));">
             <h4>健康指数</h4>

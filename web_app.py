@@ -388,6 +388,27 @@ def upload_dataset():
     except Exception as e:
         return jsonify({'success': False, 'message': f'上传失败: {str(e)}'})
 
+@app.route('/api/load_rul_datasets', methods=['GET'])
+def load_rul_datasets():
+    """加载RUL数据集列表"""
+    try:
+        datasets = []
+        base_dir = os.path.normpath(app.config['UPLOAD_FOLDER'])
+        
+        for dirs in os.listdir(base_dir):
+            if 'bearing' in dirs:
+                dataset_path = os.path.join(base_dir, dirs)
+                for dataset in os.listdir(dataset_path):
+                    datasets.append(os.path.join(dataset_path, dataset))
+        
+        return jsonify({
+            'success': True,
+            'datasets': datasets
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'加载数据集失败: {str(e)}'})
+
 # ==================== API：模型训练 ====================
 def train_model_thread(task_id, model_type, data_path, params):
     """模型训练线程函数"""
@@ -749,7 +770,8 @@ def rul_prediction_thread(task_id, model_path, data_path):
             'data_path': data_path,
             'rul': rul_result['rul'],
             'confidence': rul_result.get('confidence', 0),
-            'time': datetime.now().isoformat()
+            'time': datetime.now().isoformat(),
+            'status': rul_result.get('status', '未知')
         })
         save_database(db)
         

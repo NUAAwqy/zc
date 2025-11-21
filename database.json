@@ -62,23 +62,23 @@
       "status": "completed"
     },
     {
-      "id": "b47ff991-c53e-490c-885e-ebe0d63425f7",
-      "name": "RUL_LSTM_20251114_171124",
+      "id": "b6e5819b-78e2-4cc0-ab56-a65a79928965",
+      "name": "RUL_LSTM_20251121_212907",
       "type": "RUL_LSTM",
-      "path": "./models\\RUL_LSTM_20251114_171124.pth",
-      "config_path": "./models\\RUL_LSTM_20251114_171124.json",
-      "accuracy": 0.9233511586452763,
-      "train_time": "20251114_171124",
+      "path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "config_path": "./models\\RUL_LSTM_20251121_212907.json",
+      "accuracy": 0.982174688057041,
+      "train_time": "20251121_212907",
       "status": "completed"
     },
     {
-      "id": "8bd994c8-f5ec-4f81-a395-02962d732097",
-      "name": "RUL_CNN_20251114_172031",
+      "id": "bd40505f-4d79-4e66-b378-53b076e1010d",
+      "name": "RUL_CNN_20251121_213608",
       "type": "RUL_CNN",
-      "path": "./models\\RUL_CNN_20251114_172031.pth",
-      "config_path": "./models\\RUL_CNN_20251114_172031.json",
-      "accuracy": 0.9857397504456328,
-      "train_time": "20251114_172031",
+      "path": "./models\\RUL_CNN_20251121_213608.pth",
+      "config_path": "./models\\RUL_CNN_20251121_213608.json",
+      "accuracy": 0.8983957219251337,
+      "train_time": "20251121_213608",
       "status": "completed"
     }
   ],
@@ -331,6 +331,439 @@
       "rul": 0,
       "confidence": 0,
       "time": "2025-10-04T23:05:36.271180"
+    },
+    {
+      "id": "afb6a290-ec9d-4412-89e1-c35098f790f2",
+      "model_path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 0.8330898880958557,
+      "confidence": 0.9817750036716462,
+      "time": "2025-11-17T16:02:19.958755"
+    },
+    {
+      "id": "5c23f4c1-a46b-4988-9dea-a187db35a8fe",
+      "model_path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 2.1068482330355547,
+      "confidence": 0.9820120975375175,
+      "time": "2025-11-17T16:30:47.899594"
+    },
+    {
+      "id": "47aca72e-65d7-4634-8ede-a86bb62d2fae",
+      "model_path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 0,
+      "confidence": 0.9820120975375175,
+      "time": "2025-11-17T16:38:44.368727"
+    },
+    {
+      "id": "ee3628b7-c7fd-4f80-a2f4-44d0e9d076fb",
+      "model_path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 210,
+      "confidence": 0.9820120975375175,
+      "time": "2025-11-17T16:46:48.552715"
+    },
+    {
+      "id": "7b3ba25d-3ec3-4004-9448-5e7871cd914d",
+      "model_path": "./models\\RUL_CNN_20251114_172031.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 195,
+      "confidence": 0.9820120975375175,
+      "time": "2025-11-17T16:47:10.872626"
+    },
+    {
+      "id": "3461ffc2-8d8c-4082-a227-266f0c59fefa",
+      "model_path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "data_path": "uploads\\20251117_154726_bearing1_5\\bearing1_5",
+      "rul": 580,
+      "confidence": 0.9753510788083076,
+      "time": "2025-11-17T22:10:04.619160"
+    },
+    {
+      "id": "772875f6-cbd8-4f75-bf50-63e809b1a548",
+      "model_path": "./models\\RUL_CNN_20251114_172031.pth",
+      "data_path": "uploads\\20251117_154726_bearing1_5\\bearing1_5",
+      "rul": 1894,
+      "confidence": 0.9753510788083076,
+      "time": "2025-11-17T22:10:16.128512"
+    },
+    {
+      "id": "3e578f4b-feb2-4142-bac4-99485278d7db",
+      "model_path": "./models\\RUL_CNN_20251114_172031.pth",
+      "data_path": "uploads\\20251117_165312_bearing1_4\\bearing1_4",
+      "rul": 5137,
+      "confidence": 0.9824686631560325,
+      "time": "2025-11-17T22:10:51.027007"
+    },
+    {
+      "id": "5818ce5a-651a-4817-98e2-963c1acbecd6",
+      "model_path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 210,
+      "confidence": 0.9820120975375175,
+      "time": "2025-11-17T22:15:01.687257",
+      "status": "健康"
+    },
+    {
+      "id": "7cf57965-60a4-457f-97e3-78419de80d9b",
+      "model_path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 381,
+      "confidence": 0.8621881365776062,
+      "time": "2025-11-17T22:16:19.999350",
+      "status": "警告"
+    },
+    {
+      "id": "2c9cd265-d344-4fba-b6b0-01ea89e80d56",
+      "model_path": "./models\\RUL_CNN_20251114_172031.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 354,
+      "confidence": 0.8621881365776062,
+      "time": "2025-11-17T22:17:09.071597",
+      "status": "警告"
+    },
+    {
+      "id": "a6a2f731-2f8a-496a-9d86-d4522d8fb013",
+      "model_path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "data_path": "uploads\\20251117_154726_bearing1_5\\bearing1_5",
+      "rul": 3701,
+      "confidence": 0.9593209892511367,
+      "time": "2025-11-17T22:18:01.243645",
+      "status": "健康"
+    },
+    {
+      "id": "bc4264a3-a703-4823-b811-01d790681311",
+      "model_path": "./models\\RUL_CNN_20251114_172031.pth",
+      "data_path": "uploads\\20251117_154726_bearing1_5\\bearing1_5",
+      "rul": 2618,
+      "confidence": 0.9593209892511367,
+      "time": "2025-11-17T22:19:39.023632",
+      "status": "健康"
+    },
+    {
+      "id": "6682e369-09f3-480f-910b-88a2894c522a",
+      "model_path": "./models\\RUL_LSTM_20251117_225140.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 388,
+      "confidence": 0.8621881365776062,
+      "time": "2025-11-17T23:06:11.075150",
+      "status": "警告"
+    },
+    {
+      "id": "efd08f5e-5488-4ff1-b355-63b02c1f436b",
+      "model_path": "./models\\RUL_CNN_20251117_230327.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 489,
+      "confidence": 0.8621881365776062,
+      "time": "2025-11-17T23:13:09.928317",
+      "status": "良好"
+    },
+    {
+      "id": "bee6b953-8989-4fa6-b658-d8438bd7ca77",
+      "model_path": "./models\\RUL_CNN_20251117_231814.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 170,
+      "confidence": 0.9693927228450775,
+      "time": "2025-11-17T23:36:58.812007",
+      "status": "良好"
+    },
+    {
+      "id": "3ca403ab-0ff8-48bc-9402-67d0aefc3fcf",
+      "model_path": "./models\\RUL_LSTM_20251117_233212.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 473,
+      "confidence": 0.9693927228450775,
+      "time": "2025-11-17T23:41:27.775470",
+      "status": "健康"
+    },
+    {
+      "id": "78c0a717-30f4-4239-ba78-96493a23cf92",
+      "model_path": "./models\\RUL_CNN_20251117_231814.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 26,
+      "confidence": 0.9570865124464035,
+      "time": "2025-11-17T23:45:15.410780",
+      "status": "良好"
+    },
+    {
+      "id": "3f97726b-b531-48db-adc8-070b0f1222ef",
+      "model_path": "./models\\RUL_LSTM_20251117_233212.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 49,
+      "confidence": 0.9570865124464035,
+      "time": "2025-11-17T23:45:27.014141",
+      "status": "良好"
+    },
+    {
+      "id": "50603a37-a1d9-4c50-b0b8-37bf6c5df387",
+      "model_path": "./models\\RUL_LSTM_20251121_180917.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 230,
+      "confidence": 0.9616129487752915,
+      "time": "2025-11-21T19:11:22.719943",
+      "status": "健康"
+    },
+    {
+      "id": "75247b23-b61b-4731-a751-e2957abc0dc0",
+      "model_path": "./models\\RUL_CNN_20251121_181402.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 72,
+      "confidence": 0.9616129487752915,
+      "time": "2025-11-21T19:11:32.830103",
+      "status": "良好"
+    },
+    {
+      "id": "4d6c2aed-caa3-4155-8256-ff9ca01e2dd3",
+      "model_path": "./models\\RUL_CNN_20251121_181402.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 72,
+      "confidence": 0.9616129487752915,
+      "time": "2025-11-21T19:12:01.398048",
+      "status": "良好"
+    },
+    {
+      "id": "b5bae569-ef70-414a-b17f-cd1faea76080",
+      "model_path": "./models\\RUL_LSTM_20251121_180917.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 403,
+      "confidence": 0.9523862361907959,
+      "time": "2025-11-21T21:03:20.070510",
+      "status": "健康"
+    },
+    {
+      "id": "a610a071-7a3f-43e9-aec4-aab6b9ca40be",
+      "model_path": "./models\\RUL_CNN_20251121_181402.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 181,
+      "confidence": 0.9523862361907959,
+      "time": "2025-11-21T21:03:26.854794",
+      "status": "健康"
+    },
+    {
+      "id": "cdb0354e-5535-4d99-a1ca-17507d87ba5e",
+      "model_path": "./models\\RUL_CNN_20251121_181402.pth",
+      "data_path": "uploads\\20251117_154726_bearing1_5\\bearing1_5",
+      "rul": 183,
+      "confidence": 0.9852226778864861,
+      "time": "2025-11-21T21:03:38.401170",
+      "status": "健康"
+    },
+    {
+      "id": "570afc87-2776-4ab4-b77b-98c15cff8e4b",
+      "model_path": "./models\\RUL_LSTM_20251121_180917.pth",
+      "data_path": "uploads\\20251117_154726_bearing1_5\\bearing1_5",
+      "rul": 458,
+      "confidence": 0.9852226778864861,
+      "time": "2025-11-21T21:03:50.068189",
+      "status": "健康"
+    },
+    {
+      "id": "79b20708-82d2-432e-b4ad-1da312535f7e",
+      "model_path": "./models\\RUL_LSTM_20251121_180917.pth",
+      "data_path": "uploads\\20251117_165910_bearing1_7\\bearing1_7",
+      "rul": 2,
+      "confidence": 0.8824423789978028,
+      "time": "2025-11-21T21:04:35.693488",
+      "status": "严重故障"
+    },
+    {
+      "id": "eecada5b-9c65-4d7c-8af6-82e379bb41cc",
+      "model_path": "./models\\RUL_CNN_20251121_181402.pth",
+      "data_path": "uploads\\20251117_165910_bearing1_7\\bearing1_7",
+      "rul": 4,
+      "confidence": 0.8824423789978028,
+      "time": "2025-11-21T21:04:44.910337",
+      "status": "严重故障"
+    },
+    {
+      "id": "3d3e8269-380b-4c24-a96c-c107d3abf306",
+      "model_path": "./models\\RUL_LSTM_20251121_180917.pth",
+      "data_path": "uploads\\20251117_165803_bearing1_6\\bearing1_6",
+      "rul": 0,
+      "confidence": 0.8687559366226196,
+      "time": "2025-11-21T21:04:55.908756",
+      "status": "严重故障"
+    },
+    {
+      "id": "b4a8f389-1f6d-4e4a-bd5f-d1463855af24",
+      "model_path": "./models\\RUL_CNN_20251121_181402.pth",
+      "data_path": "uploads\\20251117_165803_bearing1_6\\bearing1_6",
+      "rul": 3,
+      "confidence": 0.8687559366226196,
+      "time": "2025-11-21T21:05:04.123276",
+      "status": "严重故障"
+    },
+    {
+      "id": "e1361c4e-0e9b-4529-9a70-5c32da3ba7ae",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 258,
+      "confidence": 0.9706914633512497,
+      "time": "2025-11-21T21:37:05.645470",
+      "status": "健康"
+    },
+    {
+      "id": "09bda18d-1ea0-4947-81cb-784cd328b42d",
+      "model_path": "./models\\RUL_CNN_20251121_213608.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 220,
+      "confidence": 0.9706914633512497,
+      "time": "2025-11-21T21:37:10.141405",
+      "status": "健康"
+    },
+    {
+      "id": "7de90eed-5152-4167-806c-e7e0e8c6ee5b",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_154726_bearing1_5\\bearing1_5",
+      "rul": 220,
+      "confidence": 0.9849351033568382,
+      "time": "2025-11-21T21:37:18.472623",
+      "status": "健康"
+    },
+    {
+      "id": "0cb5ad7c-f202-4da4-bdf7-356adeeca892",
+      "model_path": "./models\\RUL_CNN_20251121_213608.pth",
+      "data_path": "uploads\\20251117_154726_bearing1_5\\bearing1_5",
+      "rul": 323,
+      "confidence": 0.9849351033568382,
+      "time": "2025-11-21T21:37:24.514156",
+      "status": "健康"
+    },
+    {
+      "id": "a34fae7d-db6c-4b3b-a13f-bfa330f9ef8b",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_165312_bearing1_4\\bearing1_4",
+      "rul": 8,
+      "confidence": 0.9658680558204651,
+      "time": "2025-11-21T21:37:32.168457",
+      "status": "危险"
+    },
+    {
+      "id": "9b84afdc-a54e-4c02-ab03-44fefbf52096",
+      "model_path": "./models\\RUL_CNN_20251121_213608.pth",
+      "data_path": "uploads\\20251117_165312_bearing1_4\\bearing1_4",
+      "rul": 9,
+      "confidence": 0.9658680558204651,
+      "time": "2025-11-21T21:37:36.381021",
+      "status": "警告"
+    },
+    {
+      "id": "da787aa4-acb0-41ed-976d-dbafa30de83f",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_165803_bearing1_6\\bearing1_6",
+      "rul": 0,
+      "confidence": 0.8997484803199768,
+      "time": "2025-11-21T21:37:41.014247",
+      "status": "严重故障"
+    },
+    {
+      "id": "e093b60f-1a65-4eca-8bf4-7c02789787c3",
+      "model_path": "./models\\RUL_CNN_20251121_213608.pth",
+      "data_path": "uploads\\20251117_165803_bearing1_6\\bearing1_6",
+      "rul": 1,
+      "confidence": 0.8997484803199768,
+      "time": "2025-11-21T21:37:44.772836",
+      "status": "严重故障"
+    },
+    {
+      "id": "4a644f19-073e-49be-84b6-1bc63096f09b",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_165910_bearing1_7\\bearing1_7",
+      "rul": 2,
+      "confidence": 0.9220885992050171,
+      "time": "2025-11-21T21:37:49.872979",
+      "status": "严重故障"
+    },
+    {
+      "id": "0ae38ada-dda7-413f-b793-e9387600bbae",
+      "model_path": "./models\\RUL_CNN_20251121_213608.pth",
+      "data_path": "uploads\\20251117_165910_bearing1_7\\bearing1_7",
+      "rul": 3,
+      "confidence": 0.9220885992050171,
+      "time": "2025-11-21T21:37:54.595377",
+      "status": "危险"
+    },
+    {
+      "id": "fe322f7e-bc39-4404-a85b-041a35902612",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_165910_bearing1_7\\bearing1_7",
+      "rul": 2,
+      "confidence": 0.9220885992050171,
+      "time": "2025-11-21T21:37:59.027824",
+      "status": "严重故障"
+    },
+    {
+      "id": "5d73b799-a80d-4476-b7f9-ed8c58dafb6e",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 258,
+      "confidence": 0.9706914633512497,
+      "time": "2025-11-21T21:38:04.498998",
+      "status": "健康"
+    },
+    {
+      "id": "71e71082-860c-4f3f-b5c9-d777b115cc6b",
+      "model_path": "./models\\RUL_CNN_20251121_213608.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 220,
+      "confidence": 0.9706914633512497,
+      "time": "2025-11-21T21:38:12.311072",
+      "status": "健康"
+    },
+    {
+      "id": "1f7d1139-8eeb-4c85-be92-2e4f4bd1275a",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 258,
+      "confidence": 0.9706914633512497,
+      "time": "2025-11-21T21:38:19.282058",
+      "status": "健康"
+    },
+    {
+      "id": "cddf9847-6998-420c-9a3e-3decd2039716",
+      "model_path": "./models\\RUL_CNN_20251121_213608.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 220,
+      "confidence": 0.9706914633512497,
+      "time": "2025-11-21T21:38:22.501895",
+      "status": "健康"
+    },
+    {
+      "id": "aa6dd059-8b51-4585-b678-34c84d9d5c51",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 258,
+      "confidence": 0.9706914633512497,
+      "time": "2025-11-21T21:45:27.668376",
+      "status": "健康"
+    },
+    {
+      "id": "fbca4b54-bbfc-4bef-88f8-34dc84d145ad",
+      "model_path": "./models\\RUL_CNN_20251121_213608.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 220,
+      "confidence": 0.9706914633512497,
+      "time": "2025-11-21T21:45:32.462201",
+      "status": "健康"
+    },
+    {
+      "id": "354af301-23bf-436a-8411-713365636e8f",
+      "model_path": "./models\\RUL_LSTM_20251121_212907.pth",
+      "data_path": "uploads\\20251117_165312_bearing1_4\\bearing1_4",
+      "rul": 8,
+      "confidence": 0.9658680558204651,
+      "time": "2025-11-21T21:45:36.622209",
+      "status": "危险"
+    },
+    {
+      "id": "a9346bb4-20e6-4bbc-ab2d-0ac72dd9d6a3",
+      "model_path": "./models\\RUL_CNN_20251121_213608.pth",
+      "data_path": "uploads\\20251117_165312_bearing1_4\\bearing1_4",
+      "rul": 9,
+      "confidence": 0.9658680558204651,
+      "time": "2025-11-21T21:45:39.438169",
+      "status": "警告"
     }
   ]
 }
