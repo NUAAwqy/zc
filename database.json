@@ -95,46 +95,6 @@
       "status": "completed"
     },
     {
-      "id": "b47ff991-c53e-490c-885e-ebe0d63425f7",
-      "name": "RUL_LSTM_20251114_171124",
-      "type": "RUL_LSTM",
-      "path": "./models\\RUL_LSTM_20251114_171124.pth",
-      "config_path": "./models\\RUL_LSTM_20251114_171124.json",
-      "accuracy": 0.9233511586452763,
-      "train_time": "20251114_171124",
-      "status": "completed"
-    },
-    {
-      "id": "8bd994c8-f5ec-4f81-a395-02962d732097",
-      "name": "RUL_CNN_20251114_172031",
-      "type": "RUL_CNN",
-      "path": "./models\\RUL_CNN_20251114_172031.pth",
-      "config_path": "./models\\RUL_CNN_20251114_172031.json",
-      "accuracy": 0.9857397504456328,
-      "train_time": "20251114_172031",
-      "status": "completed"
-    },
-    {
-      "id": "82c0f177-a13f-4469-b719-13395581c035",
-      "name": "RUL_CNN_20251214_134753",
-      "type": "RUL_CNN",
-      "path": "./models\\RUL_CNN_20251214_134753.pth",
-      "config_path": "./models\\RUL_CNN_20251214_134753.json",
-      "accuracy": 1.0,
-      "train_time": "20251214_134753",
-      "status": "completed"
-    },
-    {
-      "id": "e602246e-374f-4ecb-a6b0-6a3b19c6d750",
-      "name": "RUL_CNN_20251214_135943",
-      "type": "RUL_CNN",
-      "path": "./models\\RUL_CNN_20251214_135943.pth",
-      "config_path": "./models\\RUL_CNN_20251214_135943.json",
-      "accuracy": 1.0,
-      "train_time": "20251214_135943",
-      "status": "completed"
-    },
-    {
       "id": "061a39a4-7bda-45ad-b6ef-f8ec4c20511f",
       "name": "1D_CNN_20251225_114546",
       "type": "1D_CNN",
@@ -152,6 +112,56 @@
       "config_path": "./models\\1D_CNN_20251225_114554.json",
       "accuracy": 0.987,
       "train_time": "20251225_114554",
+      "status": "completed"
+    },
+    {
+      "id": "b6f5cd13-05a9-47aa-a03f-431012aafe86",
+      "name": "1D_CNN_20251225_141007",
+      "type": "1D_CNN",
+      "path": "./models\\1D_CNN_20251225_141007.pth",
+      "config_path": "./models\\1D_CNN_20251225_141007.json",
+      "accuracy": 0.954,
+      "train_time": "20251225_141007",
+      "status": "completed"
+    },
+    {
+      "id": "a2aed80b-0c9c-457d-bc25-c40c9ce8efd0",
+      "name": "LSTM_20251225_150855",
+      "type": "LSTM",
+      "path": "./models\\LSTM_20251225_150855.pth",
+      "config_path": "./models\\LSTM_20251225_150855.json",
+      "accuracy": 0.83,
+      "train_time": "20251225_150855",
+      "status": "completed"
+    },
+    {
+      "id": "33d62357-3257-44c5-bdce-6ccfaae21e8d",
+      "name": "RUL_CNN_20251225_154513",
+      "type": "RUL_CNN",
+      "path": "./models\\RUL_CNN_20251225_154513.pth",
+      "config_path": "./models\\RUL_CNN_20251225_154513.json",
+      "accuracy": 0.7714285714285715,
+      "train_time": "20251225_154513",
+      "status": "completed"
+    },
+    {
+      "id": "f3023308-f0dc-4991-8da6-461c636d988e",
+      "name": "RUL_LSTM_20251225_161432",
+      "type": "RUL_LSTM",
+      "path": "./models\\RUL_LSTM_20251225_161432.pth",
+      "config_path": "./models\\RUL_LSTM_20251225_161432.json",
+      "accuracy": 0.9584487534626038,
+      "train_time": "20251225_161432",
+      "status": "completed"
+    },
+    {
+      "id": "8607b700-df85-4694-8550-ee8fcb164aa1",
+      "name": "GRU_20251225_162146",
+      "type": "GRU",
+      "path": "./models\\GRU_20251225_162146.pth",
+      "config_path": "./models\\GRU_20251225_162146.json",
+      "accuracy": 0.432,
+      "train_time": "20251225_162146",
       "status": "completed"
     }
   ],
@@ -421,6 +431,34 @@
       "data_path": "./uploads/20251004_230501_48k_Drive_End_B007_0_122.mat",
       "result": "滚动体故障：0.1778mm",
       "time": "2025-12-25T11:45:58.665640"
+    },
+    {
+      "id": "8791d053-156b-4b00-a2c3-120418d14c20",
+      "model_path": "./models/1D_CNN_20251025_210030.pth",
+      "data_path": "./uploads/20251004_230515_48k_Drive_End_OR0146_0_201.mat",
+      "result": "外圈故障（6点方向）：0.3556mm",
+      "time": "2025-12-25T16:27:51.956234"
+    },
+    {
+      "id": "fd652f88-b46c-4d3c-9782-08c3c3df81ca",
+      "model_path": "./models/1D_CNN_20251030_232952.pth",
+      "data_path": "uploads\\20251225_162324_20251004_111111_normal_0_97.mat",
+      "result": "正常",
+      "time": "2025-12-25T16:30:05.953825"
+    },
+    {
+      "id": "d34077ce-3ea0-4763-a8fc-f2af3d8cc25e",
+      "model_path": "./models/1D_CNN_20251030_232952.pth",
+      "data_path": "uploads\\20251225_162057_test.mat",
+      "result": "正常",
+      "time": "2025-12-25T16:30:16.017835"
+    },
+    {
+      "id": "766ad7f7-9c28-48b5-85bc-22f04646e1ca",
+      "model_path": "./models/1D_CNN_20251025_212839.pth",
+      "data_path": "uploads\\20251225_162324_20251004_111111_normal_0_97.mat",
+      "result": "正常",
+      "time": "2025-12-25T16:31:07.202554"
     }
   ],
   "rul_predictions": [
@@ -484,6 +522,51 @@
       "confidence": 0.9706914633512497,
       "time": "2025-12-25T11:47:52.065021",
       "status": "健康"
+    },
+    {
+      "id": "bc640d43-4f6c-423f-96b6-5cbedb6a9db5",
+      "model_path": "./models\\RUL_CNN_20251225_154513.pth",
+      "data_path": "uploads\\20251117_154726_bearing1_5\\bearing1_5",
+      "rul": 13,
+      "confidence": 0.9862940654158592,
+      "time": "2025-12-25T15:55:24.545421",
+      "status": "警告"
+    },
+    {
+      "id": "7b3968d9-056e-4af4-9344-973070dbbe30",
+      "model_path": "./models\\RUL_LSTM_20251225_161432.pth",
+      "data_path": "uploads\\20251225_161501_bearing1_1\\bearing1_1",
+      "rul": 110,
+      "confidence": 0.9716721564531327,
+      "time": "2025-12-25T16:18:57.713627",
+      "status": "健康"
+    },
+    {
+      "id": "9b280442-67ba-467a-b2e6-c1fc7dad9dc9",
+      "model_path": "./models\\RUL_LSTM_20251225_161432.pth",
+      "data_path": "uploads\\20251225_161531_bearing1_3\\bearing1_3",
+      "rul": 16,
+      "confidence": 0.9081501305103302,
+      "time": "2025-12-25T16:24:45.619242",
+      "status": "警告"
+    },
+    {
+      "id": "9e84519e-6a26-4fbb-aecf-f802383528a2",
+      "model_path": "./models\\RUL_CNN_20251225_154513.pth",
+      "data_path": "uploads\\20251225_161501_bearing1_1\\bearing1_1",
+      "rul": 8,
+      "confidence": 0.9716721564531327,
+      "time": "2025-12-25T16:24:53.984364",
+      "status": "危险"
+    },
+    {
+      "id": "54c6d1cf-1dad-4b2e-829c-d1e71934bbc1",
+      "model_path": "./models\\RUL_LSTM_20251225_161432.pth",
+      "data_path": "uploads\\20251225_161531_bearing1_3\\bearing1_3",
+      "rul": 16,
+      "confidence": 0.9081501305103302,
+      "time": "2025-12-25T16:30:31.243285",
+      "status": "警告"
     }
   ]
 }

@@ -909,7 +909,7 @@ async function loadRulDatasets() {
                 
                 option.value = dataset; 
                 
-                option.textContent = dataset.split('\\').pop();
+                option.textContent = dataset;
                  
                 selectElement.appendChild(option);
             });

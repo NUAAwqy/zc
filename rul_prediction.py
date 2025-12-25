@@ -338,7 +338,9 @@ def generate_rul_data(json_file_dir, max_sequence_length=None, sample_length=Non
     else:
         sample_length = len(os.listdir(json_file_dir))
 
+    json_file_dir = os.path.join(json_file_dir, json_file_dir[json_file_dir.find('bearing'):])
     json_files = sorted(os.listdir(json_file_dir))[:sample_length]
+    json_files = os.listdir(json_file_dir)
     for idx, json_file_name in tqdm(enumerate(json_files), desc='Loading JSON files', unit='file', colour='#448844'):
         horizontal_signals = []
         vertical_signals = []
@@ -389,12 +391,15 @@ def predict_rul(model_path, data_path):
         预测结果字典
     """
     # 加载模型
-    model = torch.load(model_path, map_location=device)
+    model = torch.load(model_path, map_location=device, weights_only=False)
     model.eval()
     
     # 加载并预处理数据
     TRAINED_SEQUENCE_LENGTH = 50
     SAMPLE_LENGTH = 50
+
+    data_path = os.path.dirname(data_path)
+    print(data_path)
     X, y = generate_rul_data(data_path, max_sequence_length=TRAINED_SEQUENCE_LENGTH, sample_length=SAMPLE_LENGTH)
     input_sequence = X[-1, :, :]
     input_tensor = torch.FloatTensor(input_sequence).unsqueeze(0).to(device)  # (1, seq_len, features)

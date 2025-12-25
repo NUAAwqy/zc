@@ -1,0 +1,8 @@
+{
+  "md5": "3195e7d10ac97a746be913400b6fed35",
+  "model_type": "RUL_LSTM",
+  "signal_length": 2048,
+  "signal_number": 5000,
+  "train_time": "20251225_161432",
+  "test_accuracy": 0.9584487534626038
+}

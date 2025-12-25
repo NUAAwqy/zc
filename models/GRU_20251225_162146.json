@@ -1,0 +1,10 @@
+{
+  "md5": "5ba7be368ea55f08889af79925e7275d",
+  "model_type": "GRU",
+  "signal_length": 2048,
+  "signal_number": 1000,
+  "train_time": "20251225_162146",
+  "test_accuracy": 0.432,
+  "mean": 0.09892309150183119,
+  "std": 0.5683373873525137
+}

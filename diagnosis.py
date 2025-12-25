@@ -34,7 +34,7 @@ def diagnosis(diagnosis_samples, model_file_path):
         y_preds = model.predict(diagnosis_samples_feature_extraction)
     else:  # PyTorch模型 (.pth 或 .pt)
         # 加载模型
-        model = torch.load(model_file_path, map_location=device)
+        model = torch.load(model_file_path, map_location=device, weights_only=False)
         model.eval()
         
         # 转换数据为张量

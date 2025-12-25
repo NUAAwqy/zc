@@ -841,6 +841,7 @@ def rul_prediction_thread(task_id, model_path, data_path):
         rul_tasks[task_id]['message'] = '正在预测剩余寿命...'
         
         # 进行RUL预测
+        print(data_path)
         rul_result = predict_rul(model_path, data_path)
         
         # 更新数据库
