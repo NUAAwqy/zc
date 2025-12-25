@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轴承故障诊断与剩余寿命预测系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 侧边导航栏 -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-cog"></i>
+            <h2>轴承诊断系统</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <i class="fas fa-home"></i>
+                <span>仪表盘</span>
+            </a>
+            <a href="#" class="nav-item" data-page="data">
+                <i class="fas fa-database"></i>
+                <span>数据管理</span>
+            </a>
+            <a href="#" class="nav-item" data-page="training">
+                <i class="fas fa-brain"></i>
+                <span>模型训练</span>
+            </a>
+            <a href="#" class="nav-item" data-page="diagnosis">
+                <i class="fas fa-stethoscope"></i>
+                <span>故障诊断</span>
+            </a>
+            <a href="#" class="nav-item" data-page="rul">
+                <i class="fas fa-chart-line"></i>
+                <span>寿命预测</span>
+            </a>
+            <a href="#" class="nav-item" data-page="devices">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </a>
+            <a href="#" class="nav-item" data-page="models">
+                <i class="fas fa-project-diagram"></i>
+                <span>模型管理</span>
+            </a>
+            <a href="#" class="nav-item" data-page="history">
+                <i class="fas fa-history"></i>
+                <span>历史记录</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-left">
+                <h1 id="page-title">仪表盘</h1>
+            </div>
+            <div class="header-right">
+                <span class="datetime" id="current-time"></span>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="user-name" onclick="toggleUserMenu()">{{ username }}</span>
+                    <div id="user-menu" class="user-menu hidden">
+                        <button class="btn-icon" onclick="showChangePasswordDialog()">
+                            <i class="fas fa-key"></i> 修改密码
+                        </button>
+                        <button class="btn-icon" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> 登出
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 页面容器 -->
+        <div class="page-container">
+            <!-- 仪表盘页面 -->
+            <div id="dashboard-page" class="page active">
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="dataset-count">0</h3>
+                            <p>数据集</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="model-count">0</h3>
+                            <p>训练模型</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="diagnosis-count">0</h3>
+                            <p>诊断次数</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="device-count">0</h3>
+                            <p>设备数量</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h2><i class="fas fa-chart-bar"></i> 系统概览</h2>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h3>支持的诊断算法</h3>
+                            <ul>
+                                <li><i class="fas fa-check-circle"></i> 1D-CNN 卷积神经网络</li>
+                                <li><i class="fas fa-check-circle"></i> LSTM 长短期记忆网络</li>
+                                <li><i class="fas fa-check-circle"></i> GRU 门控循环单元</li>
+                                <li><i class="fas fa-check-circle"></i> Random Forest 随机森林</li>
+                            </ul>
+                        </div>
+                        <div class="info-card">
+                            <h3>支持的预测算法</h3>
+                            <ul>
+                                <li><i class="fas fa-check-circle"></i> LSTM-RUL 寿命预测</li>
+                                <li><i class="fas fa-check-circle"></i> CNN-RUL 寿命预测</li>
+                                <li><i class="fas fa-check-circle"></i> 基于规则的RUL估算</li>
+                                <li><i class="fas fa-check-circle"></i> 健康指数评估</li>
+                            </ul>
+                        </div>
+                        <div class="info-card">
+                            <h3>故障类型识别</h3>
+                            <ul>
+                                <li><i class="fas fa-cog"></i> 正常状态</li>
+                                <li><i class="fas fa-cog"></i> 内圈故障 (0.007", 0.014", 0.021")</li>
+                                <li><i class="fas fa-cog"></i> 外圈故障 (0.007", 0.014", 0.021")</li>
+                                <li><i class="fas fa-cog"></i> 滚动体故障 (0.007", 0.014", 0.021")</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据管理页面 -->
+            <div id="data-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-database"></i> 数据接入与处理</h2>
+                </div>
+                
+                <div class="upload-section">
+                    <div class="upload-card">
+                        <h3><i class="fas fa-file-upload"></i> 上传单个数据文件</h3>
+                        <p class="hint">支持 .mat 格式的振动数据文件</p>
+                        <input type="file" id="single-file" accept=".mat" style="display:none">
+                        <button class="btn btn-primary" onclick="document.getElementById('single-file').click()">
+                            <i class="fas fa-upload"></i> 选择文件
+                        </button>
+                        <div id="single-file-info" class="file-info"></div>
+                    </div>
+
+                    <div class="upload-card">
+                        <h3><i class="fas fa-folder-open"></i> 上传训练数据集</h3>
+                        <p class="hint">上传包含多个故障类型的数据集（用于模型训练和推理）</p>
+                        <input type="text" id="dataset-name" placeholder="数据集名称" class="input-field">
+                        <input type="file" id="dataset-files" webkitdirectory style="display:none">
+
+                        <button class="btn btn-primary" onclick="document.getElementById('dataset-files').click()">
+                            <i class="fas fa-folder-open"></i> 选择文件夹
+                        </button>
+                        <button class="btn btn-success" onclick="uploadDataset()">
+                            <i class="fas fa-cloud-upload-alt"></i> 开始上传
+                        </button>
+                        <div id="dataset-files-info" class="file-info"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模型训练页面 -->
+            <div id="training-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-brain"></i> 算法模型训练</h2>
+                </div>
+
+                <div class="training-form">
+                    <div class="form-group">
+                        <label><i class="fas fa-project-diagram"></i> 选择模型类型</label>
+                        <select id="model-type" class="input-field">
+                            <option value="1D_CNN">1D-CNN (一维卷积神经网络)</option>
+                            <option value="LSTM">LSTM (长短期记忆网络)</option>
+                            <option value="GRU">GRU (门控循环单元)</option>
+                            <option value="random_forest">Random Forest (随机森林)</option>
+                            <option value="RUL_LSTM">RUL_LSTM</option>
+                            <option value="RUL_CNN">RUL_CNN</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-folder"></i> 训练数据路径</label>
+                        <select id="training-data-path-select" class="input-field" onchange="updateTrainingDataPath()">
+                            <option value="">-- 请选择已上传的数据集 --</option>
+                        </select>
+                        <input type="text" id="training-data-path" class="input-field" style="margin-top: 8px;" 
+                               placeholder="或手动输入路径，例如: ./uploads/20240101_120000_dataset">
+                        <button class="btn btn-secondary" style="margin-top: 8px;" onclick="loadTrainingDatasets()">
+                            <i class="fas fa-sync"></i> 刷新数据集列表
+                        </button>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>信号长度</label>
+                            <input type="number" id="signal-length" class="input-field" value="2048">
+                        </div>
+                        <div class="form-group">
+                            <label>样本数量</label>
+                            <input type="number" id="signal-number" class="input-field" value="1000">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>批次大小</label>
+                            <input type="number" id="batch-size" class="input-field" value="128">
+                        </div>
+                        <div class="form-group">
+                            <label>训练轮数</label>
+                            <input type="number" id="epochs" class="input-field" value="20">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="data-enhance"> 启用数据增强
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="startTraining()">
+                        <i class="fas fa-play"></i> 开始训练
+                    </button>
+                </div>
+
+                <div id="training-progress" class="progress-section" style="display:none;">
+                    <h3><i class="fas fa-spinner fa-spin"></i> 训练进行中...</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="training-progress-bar"></div>
+                    </div>
+                    <p id="training-status">正在初始化...</p>
+                </div>
+
+                <div id="training-result" class="result-section" style="display:none;">
+                    <h3><i class="fas fa-check-circle"></i> 训练完成</h3>
+                    <div class="result-grid" id="training-result-content"></div>
+                </div>
+            </div>
+
+            <!-- 故障诊断页面 -->
+            <div id="diagnosis-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-stethoscope"></i> 实时故障诊断</h2>
+                </div>
+
+                <div class="diagnosis-form">
+                    <div class="form-group">
+                        <label><i class="fas fa-brain"></i> 选择诊断模型</label>
+                        <select id="diagnosis-model" class="input-field">
+                            <option value="">-- 请选择模型 --</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="loadModels()">
+                            <i class="fas fa-sync"></i> 刷新列表
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-file"></i> 待诊断数据</label>
+                        <select id="diagnosis-data-path-select" class="input-field" onchange="updateDiagnosisDataPath()">
+                            <option value="">-- 请选择已上传的文件 --</option>
+                        </select>
+                        <input type="text" id="diagnosis-data-path" class="input-field" style="margin-top: 8px;" 
+                               placeholder="或手动输入路径，例如: ./uploads/20240101_120000_data.mat">
+                        <div style="margin-top: 8px;">
+                            <input type="file" id="diagnosis-file" accept=".mat" style="display:none">
+                            <button class="btn btn-secondary" onclick="document.getElementById('diagnosis-file').click()">
+                                <i class="fas fa-upload"></i> 上传新文件
+                            </button>
+                            <button class="btn btn-secondary" onclick="loadDiagnosisFiles()">
+                                <i class="fas fa-sync"></i> 刷新文件列表
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="startDiagnosis()">
+                        <i class="fas fa-stethoscope"></i> 开始诊断
+                    </button>
+                </div>
+
+                <div id="diagnosis-progress" class="progress-section" style="display:none;">
+                    <h3><i class="fas fa-spinner fa-spin"></i> 诊断中...</h3>
+                    <p id="diagnosis-status">正在处理数据...</p>
+                </div>
+
+                <div id="diagnosis-result" class="result-section" style="display:none;">
+                    <h3><i class="fas fa-check-circle"></i> 诊断结果</h3>
+                    <div class="diagnosis-result-card" id="diagnosis-result-content"></div>
+                </div>
+            </div>
+
+            <!-- RUL预测页面 -->
+            <div id="rul-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-chart-line"></i> 剩余使用寿命预测</h2>
+                </div>
+
+                <div class="rul-form">
+                    <div class="form-group">
+                        <label><i class="fas fa-brain"></i> 选择RUL预测模型</label>
+                        <select id="rul-model" class="input-field">
+                            <option value="">-- 请选择模型 --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-file"></i> 轴承采样数据</label>
+                        <select id="rul-dataset" class="input-field">
+                            <option value="">-- 请选择采样序列 --</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="startRULPrediction()">
+                        <i class="fas fa-chart-line"></i> 开始预测
+                    </button>
+                </div>
+
+                <div id="rul-progress" class="progress-section" style="display:none;">
+                    <h3><i class="fas fa-spinner fa-spin"></i> 预测中...</h3>
+                    <p id="rul-status">正在分析数据...</p>
+                </div>
+
+                <div id="rul-result" class="result-section" style="display:none;">
+                    <h3><i class="fas fa-check-circle"></i> 预测结果</h3>
+                    <div class="rul-result-grid" id="rul-result-content"></div>
+                </div>
+            </div>
+
+            <!-- 设备管理页面 -->
+            <div id="devices-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-server"></i> 设备管理</h2>
+                    <button class="btn btn-primary" onclick="showAddDeviceDialog()">
+                        <i class="fas fa-plus"></i> 添加设备
+                    </button>
+                </div>
+
+                <div class="devices-grid" id="devices-list">
+                    <!-- 设备卡片将动态加载 -->
+                </div>
+            </div>
+
+            <!-- 模型管理页面 -->
+            <div id="models-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-project-diagram"></i> 模型管理</h2>
+                    <button class="btn btn-primary" onclick="loadModels()">
+                        <i class="fas fa-sync"></i> 刷新列表
+                    </button>
+                </div>
+
+                <div class="models-table">
+                    <table id="models-table">
+                        <thead>
+                            <tr>
+                                <th>模型名称</th>
+                                <th>类型</th>
+                                <th>准确率</th>
+                                <th>训练时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="models-list">
+                            <!-- 模型列表将动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 历史记录页面 -->
+            <div id="history-page" class="page">
+                <div class="page-header">
+                    <h2><i class="fas fa-history"></i> 历史记录</h2>
+                </div>
+
+                <div class="history-tabs">
+                    <button class="tab-btn active" onclick="showHistoryTab('diagnosis')">
+                        <i class="fas fa-stethoscope"></i> 诊断记录
+                    </button>
+                    <button class="tab-btn" onclick="showHistoryTab('rul')">
+                        <i class="fas fa-chart-line"></i> RUL预测记录
+                    </button>
+                </div>
+
+                <div id="diagnosis-history" class="history-content active">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>模型</th>
+                                <th>数据文件</th>
+                                <th>诊断结果</th>
+                            </tr>
+                        </thead>
+                        <tbody id="diagnosis-history-list">
+                            <!-- 诊断历史将动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="rul-history" class="history-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>模型</th>
+                                <th>数据文件</th>
+                                <th>剩余寿命</th>
+                                <th>健康指数</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rul-history-list">
+                            <!-- RUL预测历史将动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 对话框 -->
+    <div id="dialog-overlay" class="dialog-overlay" onclick="closeDialog()"></div>
+    
+    <!-- 添加设备对话框 -->
+    <div id="add-device-dialog" class="dialog">
+        <div class="dialog-header">
+            <h3><i class="fas fa-plus"></i> 添加设备</h3>
+            <button onclick="closeDialog()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="dialog-content">
+            <div class="form-group">
+                <label>设备名称</label>
+                <input type="text" id="device-name" class="input-field">
+            </div>
+            <div class="form-group">
+                <label>设备类型</label>
+                <input type="text" id="device-type" class="input-field">
+            </div>
+            <div class="form-group">
+                <label>安装位置</label>
+                <input type="text" id="device-location" class="input-field">
+            </div>
+        </div>
+        <div class="dialog-footer">
+            <button class="btn btn-secondary" onclick="closeDialog()">取消</button>
+            <button class="btn btn-primary" onclick="addDevice()">添加</button>
+        </div>
+    </div>
+
+    <!-- 修改密码对话框 -->
+    <div id="change-password-dialog" class="dialog">
+        <div class="dialog-header">
+            <h3><i class="fas fa-key"></i> 修改密码</h3>
+            <button onclick="closeDialog()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="dialog-content">
+            <div id="password-message" class="message" style="display:none;"></div>
+            <div class="form-group">
+                <label>旧密码</label>
+                <input type="password" id="old-password" class="input-field" autocomplete="current-password">
+            </div>
+            <div class="form-group">
+                <label>新密码（至少6位）</label>
+                <input type="password" id="new-password" class="input-field" autocomplete="new-password" minlength="6">
+            </div>
+            <div class="form-group">
+                <label>确认新密码</label>
+                <input type="password" id="confirm-password" class="input-field" autocomplete="new-password" minlength="6">
+            </div>
+        </div>
+        <div class="dialog-footer">
+            <button class="btn btn-secondary" onclick="closeDialog()">取消</button>
+            <button class="btn btn-primary" onclick="changePassword()">确认修改</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+

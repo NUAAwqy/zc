@@ -1,0 +1,10 @@
+{
+  "mean": 0.08417187742124549,
+  "std": 0.5393574450431995,
+  "md5": "ebf75b2a81bc4354581c573e3bb7d413",
+  "model_type": "LSTM",
+  "signal_length": 2048,
+  "signal_number": 1000,
+  "train_time": "20251025_203213",
+  "test_accuracy": 0.811
+}

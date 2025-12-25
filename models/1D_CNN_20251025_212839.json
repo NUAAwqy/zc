@@ -1,0 +1,10 @@
+{
+  "mean": 0.09766349131135534,
+  "std": 0.5467661257961262,
+  "md5": "cd5161f3aaeb316725ff3762a9086787",
+  "model_type": "1D_CNN",
+  "signal_length": 2048,
+  "signal_number": 1000,
+  "train_time": "20251025_212839",
+  "test_accuracy": 0.99
+}

@@ -1,0 +1,8 @@
+{
+  "md5": "e3a43965cccd28d3a05491e423126793",
+  "model_type": "RUL_CNN",
+  "signal_length": 2048,
+  "signal_number": 1000,
+  "train_time": "20251214_135943",
+  "test_accuracy": 1.0
+}

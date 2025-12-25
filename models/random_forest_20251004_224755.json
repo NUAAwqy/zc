@@ -1,0 +1,10 @@
+{
+  "mean": null,
+  "std": null,
+  "md5": "8f1200b21e72cf749a1e975e77e24ccb",
+  "model_type": "random_forest",
+  "signal_length": 2048,
+  "signal_number": 1000,
+  "train_time": "20251004_224755",
+  "test_accuracy": 0.9915
+}

@@ -1,0 +1,489 @@
+{
+  "devices": [
+    {
+      "id": "a1b2c3d4-e5f6-4789-a012-345678901234",
+      "name": "主轴轴承-001",
+      "type": "深沟球轴承",
+      "location": "生产车间A区-1号机床主轴",
+      "status": "normal",
+      "create_time": "2025-01-15T10:00:00.000000"
+    },
+    {
+      "id": "b2c3d4e5-f6a7-4890-b123-456789012345",
+      "name": "电机轴承-M01",
+      "type": "滚动轴承",
+      "location": "2号生产线-驱动电机",
+      "status": "normal",
+      "create_time": "2025-01-15T10:01:00.000000"
+    },
+    {
+      "id": "c3d4e5f6-a7b8-4901-c234-567890123456",
+      "name": "风机轴承-F001",
+      "type": "调心滚子轴承",
+      "location": "冷却系统-主风机",
+      "status": "normal",
+      "create_time": "2025-01-15T10:02:00.000000"
+    },
+    {
+      "id": "d4e5f6a7-b8c9-4012-d345-678901234567",
+      "name": "水泵轴承-P01",
+      "type": "角接触球轴承",
+      "location": "供水系统-主水泵",
+      "status": "normal",
+      "create_time": "2025-01-15T10:03:00.000000"
+    }
+  ],
+  "models": [
+    {
+      "id": "0d28ba3e-edce-41eb-a215-06d7b865d662",
+      "name": "random_forest_20251004_224755",
+      "type": "random_forest",
+      "path": "./models/random_forest_20251004_224755.m",
+      "config_path": "./models/random_forest_20251004_224755.json",
+      "accuracy": 0.9915,
+      "train_time": "20251004_224755",
+      "status": "completed"
+    },
+    {
+      "id": "1361e7c6-0b5a-459d-9413-5a100ca911e5",
+      "name": "GRU_20251004_230642",
+      "type": "GRU",
+      "path": "./models/GRU_20251004_230642.pth",
+      "config_path": "./models/GRU_20251004_230642.json",
+      "accuracy": 0.899,
+      "train_time": "20251004_230642",
+      "status": "completed"
+    },
+    {
+      "id": "c7f21483-337d-430b-8fb6-ec077e6984c0",
+      "name": "LSTM_20251025_203213",
+      "type": "LSTM",
+      "path": "./models/LSTM_20251025_203213.pth",
+      "config_path": "./models/LSTM_20251025_203213.json",
+      "accuracy": 0.811,
+      "train_time": "20251025_203213",
+      "status": "completed"
+    },
+    {
+      "id": "e96f1eee-0f77-4337-8d53-141115329f2f",
+      "name": "1D_CNN_20251025_210030",
+      "type": "1D_CNN",
+      "path": "./models/1D_CNN_20251025_210030.pth",
+      "config_path": "./models/1D_CNN_20251025_210030.json",
+      "accuracy": 0.968,
+      "train_time": "20251025_210030",
+      "status": "completed"
+    },
+    {
+      "id": "6831446a-652d-4e97-bfac-9ab0f1769c79",
+      "name": "1D_CNN_20251025_212839",
+      "type": "1D_CNN",
+      "path": "./models/1D_CNN_20251025_212839.pth",
+      "config_path": "./models/1D_CNN_20251025_212839.json",
+      "accuracy": 0.99,
+      "train_time": "20251025_212839",
+      "status": "completed"
+    },
+    {
+      "id": "152d76b8-c5c4-440c-8d65-a30a515fd2ca",
+      "name": "1D_CNN_20251030_232952",
+      "type": "1D_CNN",
+      "path": "./models/1D_CNN_20251030_232952.pth",
+      "config_path": "./models/1D_CNN_20251030_232952.json",
+      "accuracy": 0.985,
+      "train_time": "20251030_232952",
+      "status": "completed"
+    },
+    {
+      "id": "b47ff991-c53e-490c-885e-ebe0d63425f7",
+      "name": "RUL_LSTM_20251114_171124",
+      "type": "RUL_LSTM",
+      "path": "./models\\RUL_LSTM_20251114_171124.pth",
+      "config_path": "./models\\RUL_LSTM_20251114_171124.json",
+      "accuracy": 0.9233511586452763,
+      "train_time": "20251114_171124",
+      "status": "completed"
+    },
+    {
+      "id": "8bd994c8-f5ec-4f81-a395-02962d732097",
+      "name": "RUL_CNN_20251114_172031",
+      "type": "RUL_CNN",
+      "path": "./models\\RUL_CNN_20251114_172031.pth",
+      "config_path": "./models\\RUL_CNN_20251114_172031.json",
+      "accuracy": 0.9857397504456328,
+      "train_time": "20251114_172031",
+      "status": "completed"
+    },
+    {
+      "id": "82c0f177-a13f-4469-b719-13395581c035",
+      "name": "RUL_CNN_20251214_134753",
+      "type": "RUL_CNN",
+      "path": "./models\\RUL_CNN_20251214_134753.pth",
+      "config_path": "./models\\RUL_CNN_20251214_134753.json",
+      "accuracy": 1.0,
+      "train_time": "20251214_134753",
+      "status": "completed"
+    },
+    {
+      "id": "e602246e-374f-4ecb-a6b0-6a3b19c6d750",
+      "name": "RUL_CNN_20251214_135943",
+      "type": "RUL_CNN",
+      "path": "./models\\RUL_CNN_20251214_135943.pth",
+      "config_path": "./models\\RUL_CNN_20251214_135943.json",
+      "accuracy": 1.0,
+      "train_time": "20251214_135943",
+      "status": "completed"
+    },
+    {
+      "id": "061a39a4-7bda-45ad-b6ef-f8ec4c20511f",
+      "name": "1D_CNN_20251225_114546",
+      "type": "1D_CNN",
+      "path": "./models\\1D_CNN_20251225_114546.pth",
+      "config_path": "./models\\1D_CNN_20251225_114546.json",
+      "accuracy": 0.944,
+      "train_time": "20251225_114546",
+      "status": "completed"
+    },
+    {
+      "id": "3d415340-7b8b-41e0-963d-c9c3b5c6b757",
+      "name": "1D_CNN_20251225_114554",
+      "type": "1D_CNN",
+      "path": "./models\\1D_CNN_20251225_114554.pth",
+      "config_path": "./models\\1D_CNN_20251225_114554.json",
+      "accuracy": 0.987,
+      "train_time": "20251225_114554",
+      "status": "completed"
+    }
+  ],
+  "diagnoses": [
+    {
+      "id": "256e5e25-fe31-41d3-99d8-d76c04f14e90",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_224818_48k_Drive_End_B007_0_122.mat",
+      "result": "滚动体故障：0.1778mm",
+      "time": "2025-10-04T22:48:19.892794"
+    },
+    {
+      "id": "b90cf6cc-1ba8-4c22-9bde-c2223de07f18",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_230451_normal_0_97.mat",
+      "result": "正常",
+      "time": "2025-10-04T23:04:53.051012"
+    },
+    {
+      "id": "fdbd06a8-ab4e-47d4-ac6a-93d728c1bb4b",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_230457_48k_Drive_End_OR0216_0_238.mat",
+      "result": "滚动体故障：0.1778mm",
+      "time": "2025-10-04T23:04:58.419661"
+    },
+    {
+      "id": "a2e856e5-5148-4889-911a-eaa91e8982bd",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_230501_48k_Drive_End_B007_0_122.mat",
+      "result": "滚动体故障：0.1778mm",
+      "time": "2025-10-04T23:05:02.146819"
+    },
+    {
+      "id": "e1cb34f6-8bdb-4cab-824e-4090c8fde555",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_230507_48k_Drive_End_OR0076_0_135.mat",
+      "result": "外圈故障（6点方向）：0.1778mm",
+      "time": "2025-10-04T23:05:07.660264"
+    },
+    {
+      "id": "bbec3a88-9d9b-491c-ba5c-3da2a459daf8",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_230507_48k_Drive_End_OR0076_0_135.mat",
+      "result": "外圈故障（6点方向）：0.1778mm",
+      "time": "2025-10-04T23:05:11.836856"
+    },
+    {
+      "id": "c543aff0-7504-49e7-8477-53f87a133229",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_230511_48k_Drive_End_IR021_0_213.mat",
+      "result": "内圈故障：0.5334mm",
+      "time": "2025-10-04T23:05:15.641278"
+    },
+    {
+      "id": "5df810e4-798f-4a86-8467-845a64ba895b",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_230515_48k_Drive_End_OR0146_0_201.mat",
+      "result": "外圈故障（6点方向）：0.3556mm",
+      "time": "2025-10-04T23:05:20.356319"
+    },
+    {
+      "id": "a7a3b071-0520-435c-abb2-03fcb0250350",
+      "model_path": "./models/GRU_20251004_230642.pth",
+      "data_path": "./uploads/20251004_230713_48k_Drive_End_OR0216_0_238.mat",
+      "result": "外圈故障（6点方向）：0.5334mm",
+      "time": "2025-10-04T23:07:13.990952"
+    },
+    {
+      "id": "42dd6f5d-c6c0-46d1-8c58-da82dfd409c8",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_195756_48k_Drive_End_B021_0_226.mat",
+      "result": "滚动体故障：0.5334mm",
+      "time": "2025-10-25T19:58:00.249681"
+    },
+    {
+      "id": "9fcbebf1-23fb-405a-8ad4-4d02196670c5",
+      "model_path": "./models/GRU_20251004_230642.pth",
+      "data_path": "./uploads/20251025_195756_48k_Drive_End_B021_0_226.mat",
+      "result": "滚动体故障：0.5334mm",
+      "time": "2025-10-25T19:58:05.638895"
+    },
+    {
+      "id": "76a9ffdf-78c2-44b7-93c7-8c1846fbbbff",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_195756_48k_Drive_End_B021_0_226.mat",
+      "result": "滚动体故障：0.5334mm",
+      "time": "2025-10-25T19:58:07.768940"
+    },
+    {
+      "id": "4125cc33-7fd1-49b3-963c-f6c9141e156f",
+      "model_path": "./models/GRU_20251004_230642.pth",
+      "data_path": "./uploads/20251004_230713_48k_Drive_End_OR0216_0_238.mat",
+      "result": "外圈故障（6点方向）：0.5334mm",
+      "time": "2025-10-25T19:59:24.618750"
+    },
+    {
+      "id": "c077f1f7-1e08-453f-9826-834e1bfa0135",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_230713_48k_Drive_End_OR0216_0_238.mat",
+      "result": "外圈故障（6点方向）：0.5334mm",
+      "time": "2025-10-25T19:59:29.158610"
+    },
+    {
+      "id": "df7c559a-d024-4733-9e8b-e2c8f0fd5b2b",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_195936_normal_0_97.mat",
+      "result": "正常",
+      "time": "2025-10-25T19:59:38.073148"
+    },
+    {
+      "id": "7cb0919a-2879-40ec-84ec-f4d0e733ef2e",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_195936_normal_0_97.mat",
+      "result": "正常",
+      "time": "2025-10-25T19:59:41.877617"
+    },
+    {
+      "id": "9dc03470-c087-4edb-8a25-8d37a78ac0d3",
+      "model_path": "./models/GRU_20251004_230642.pth",
+      "data_path": "./uploads/20251025_195936_normal_0_97.mat",
+      "result": "正常",
+      "time": "2025-10-25T19:59:44.981472"
+    },
+    {
+      "id": "dc417967-7402-41b6-9adb-edd8ebadb6b5",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_200747_48k_Drive_End_B007_0_122.mat",
+      "result": "滚动体故障：0.1778mm",
+      "time": "2025-10-25T20:07:58.654286"
+    },
+    {
+      "id": "04c9e4e8-2208-4f39-a067-e3abf2ae96b9",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_200812_48k_Drive_End_IR007_0_109.mat",
+      "result": "内圈故障：0.1778mm",
+      "time": "2025-10-25T20:08:13.663775"
+    },
+    {
+      "id": "fd4a7b01-a0b9-4262-b5f5-542acdd0f499",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_200823_48k_Drive_End_OR0216_0_238.mat",
+      "result": "外圈故障（6点方向）：0.5334mm",
+      "time": "2025-10-25T20:08:25.866313"
+    },
+    {
+      "id": "aa82b794-d1ef-454a-85bb-22f1e5671234",
+      "model_path": "./models/1D_CNN_20251025_210030.pth",
+      "data_path": "./uploads/20251004_224818_48k_Drive_End_B007_0_122.mat",
+      "result": "滚动体故障：0.1778mm",
+      "time": "2025-10-25T21:02:19.760658"
+    },
+    {
+      "id": "1fb2cbed-4440-49bc-8bc9-2697898b8ac4",
+      "model_path": "./models/1D_CNN_20251025_210030.pth",
+      "data_path": "./uploads/20251025_195756_48k_Drive_End_B021_0_226.mat",
+      "result": "滚动体故障：0.5334mm",
+      "time": "2025-10-25T21:11:13.173007"
+    },
+    {
+      "id": "88cba6bb-324d-425c-adc9-aefaccaa320b",
+      "model_path": "./models/1D_CNN_20251025_212839.pth",
+      "data_path": "./uploads/20251025_213620_264_12.mat",
+      "result": "内圈故障：0.3556mm",
+      "time": "2025-10-25T21:36:21.170316"
+    },
+    {
+      "id": "5e941759-811b-49ca-ac43-71effe04811d",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_220230_240_6.mat",
+      "result": "外圈故障（6点方向）：0.5334mm",
+      "time": "2025-10-25T22:02:32.943598"
+    },
+    {
+      "id": "6d35593a-b359-41c4-b183-3641f82b82d2",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_220425_48k_Drive_End_IR007_0_109.mat",
+      "result": "内圈故障：0.1778mm",
+      "time": "2025-10-25T22:04:26.566723"
+    },
+    {
+      "id": "80032e11-5527-44ce-8025-32a2871f4b3f",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_220425_48k_Drive_End_IR007_0_109.mat",
+      "result": "内圈故障：0.1778mm",
+      "time": "2025-10-25T22:04:34.159210"
+    },
+    {
+      "id": "2832a776-d0d0-47b5-8701-dcb08a2d67e9",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_220425_48k_Drive_End_IR007_0_109.mat",
+      "result": "内圈故障：0.1778mm",
+      "time": "2025-10-25T22:04:36.334856"
+    },
+    {
+      "id": "02e4d9ff-4294-47a5-b4d7-0b19295e52cc",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_220513_48k_Drive_End_B014_0_189.mat",
+      "result": "滚动体故障：0.3556mm",
+      "time": "2025-10-25T22:05:13.949638"
+    },
+    {
+      "id": "1766f478-0d8e-4649-be5a-c0d1a223dcff",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_220520_48k_Drive_End_IR007_0_109.mat",
+      "result": "内圈故障：0.1778mm",
+      "time": "2025-10-25T22:05:20.877117"
+    },
+    {
+      "id": "94add28b-41e7-4036-b702-fab85314ae2c",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251025_220526_48k_Drive_End_OR0076_0_135.mat",
+      "result": "外圈故障（6点方向）：0.1778mm",
+      "time": "2025-10-25T22:05:26.771366"
+    },
+    {
+      "id": "b20c0125-23bc-4bd3-b95d-1c9949570536",
+      "model_path": "./models/1D_CNN_20251025_212839.pth",
+      "data_path": "./uploads/20251026_143842_48k_Drive_End_B021_0_226.mat",
+      "result": "滚动体故障：0.5334mm",
+      "time": "2025-10-26T14:38:43.748986"
+    },
+    {
+      "id": "dfbbc018-61dc-447b-b91e-4f2f0ee1d17b",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251030_232707_48k_Drive_End_IR021_0_213.mat",
+      "result": "内圈故障：0.5334mm",
+      "time": "2025-10-30T23:27:08.341701"
+    },
+    {
+      "id": "3e08b397-c47f-41ec-8e92-73a9e0a29ab3",
+      "model_path": "./models/1D_CNN_20251030_232952.pth",
+      "data_path": "./uploads/20251025_195936_normal_0_97.mat",
+      "result": "正常",
+      "time": "2025-10-30T23:37:44.145733"
+    },
+    {
+      "id": "30b14ccf-904f-448a-845b-a371a97488e0",
+      "model_path": "./models/1D_CNN_20251025_212839.pth",
+      "data_path": "./uploads/20251004_230507_48k_Drive_End_OR0076_0_135.mat",
+      "result": "外圈故障（6点方向）：0.1778mm",
+      "time": "2025-12-14T13:44:28.019472"
+    },
+    {
+      "id": "2bd35c93-016c-4a7c-beb6-e91a06f50d45",
+      "model_path": "./models/GRU_20251004_230642.pth",
+      "data_path": "./uploads/20251025_200812_48k_Drive_End_IR007_0_109.mat",
+      "result": "内圈故障：0.1778mm",
+      "time": "2025-12-24T16:02:25.561689"
+    },
+    {
+      "id": "8d83b1d3-6d74-45cd-be38-d4d110c09f53",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "uploads\\20251025_213620_264_12.mat",
+      "result": "滚动体故障：0.1778mm",
+      "time": "2025-12-25T11:20:33.300309"
+    },
+    {
+      "id": "64439027-b6e2-451e-b1aa-e898d7297f13",
+      "model_path": "./models/random_forest_20251004_224755.m",
+      "data_path": "./uploads/20251004_224818_48k_Drive_End_B007_0_122.mat",
+      "result": "滚动体故障：0.1778mm",
+      "time": "2025-12-25T11:45:04.679133"
+    },
+    {
+      "id": "6dadd385-8f52-4399-9bed-4fd9d2797be1",
+      "model_path": "./models\\1D_CNN_20251225_114546.pth",
+      "data_path": "./uploads/20251004_230501_48k_Drive_End_B007_0_122.mat",
+      "result": "滚动体故障：0.1778mm",
+      "time": "2025-12-25T11:45:58.665640"
+    }
+  ],
+  "rul_predictions": [
+    {
+      "id": "e75a2bbc-152c-40db-8fea-c7b32b4a266c",
+      "model_path": "rule-based",
+      "data_path": "./uploads/20251004_230527_48k_Drive_End_IR021_0_213.mat",
+      "rul": 0,
+      "confidence": 0,
+      "time": "2025-10-04T23:05:29.559821"
+    },
+    {
+      "id": "45693e35-2777-474f-8af5-0f70d7744f59",
+      "model_path": "rule-based",
+      "data_path": "./uploads/20251004_230535_normal_0_97.mat",
+      "rul": 0,
+      "confidence": 0,
+      "time": "2025-10-04T23:05:36.271180"
+    },
+    {
+      "id": "a9165136-f27e-4339-9c96-7a5b40f8a54a",
+      "model_path": "./models\\RUL_CNN_20251214_134753.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 378,
+      "confidence": 0.9706914633512497,
+      "time": "2025-12-14T13:49:26.678359",
+      "status": "健康"
+    },
+    {
+      "id": "c2919679-6fee-45fc-a09d-ff09d13d18d6",
+      "model_path": "./models\\RUL_CNN_20251214_135943.pth",
+      "data_path": "uploads\\20251117_165803_bearing1_6\\bearing1_6",
+      "rul": 14036,
+      "confidence": 0.8997484803199768,
+      "time": "2025-12-24T16:02:57.942746",
+      "status": "健康"
+    },
+    {
+      "id": "7ef76fbf-a2d2-43ca-b879-ee57b8fa7709",
+      "model_path": "./models\\RUL_CNN_20251214_135943.pth",
+      "data_path": "uploads\\20251117_165312_bearing1_4\\bearing1_4",
+      "rul": 154,
+      "confidence": 0.9658680558204651,
+      "time": "2025-12-25T11:20:43.424205",
+      "status": "健康"
+    },
+    {
+      "id": "5374e661-8ba1-427c-a7e8-a9701823a7cb",
+      "model_path": "./models\\RUL_CNN_20251214_135943.pth",
+      "data_path": "uploads\\20251117_165910_bearing1_7\\bearing1_7",
+      "rul": 358,
+      "confidence": 0.9220885992050171,
+      "time": "2025-12-25T11:20:47.115693",
+      "status": "健康"
+    },
+    {
+      "id": "f4a7a6a5-fde7-41b3-af94-029ceefc2339",
+      "model_path": "./models\\RUL_CNN_20251214_135943.pth",
+      "data_path": "uploads\\20251117_154557_bearing1_3\\bearing1_3",
+      "rul": 154,
+      "confidence": 0.9706914633512497,
+      "time": "2025-12-25T11:47:52.065021",
+      "status": "健康"
+    }
+  ]
+}

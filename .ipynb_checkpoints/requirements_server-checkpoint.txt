@@ -1,0 +1,34 @@
+# PyTorch轴承故障诊断平台 - 服务器版本依赖
+# 适用于无GUI环境（AutoDL、云服务器等）
+# 使用方法: pip install -r requirements_server.txt
+
+# 深度学习框架
+torch>=1.10.0
+torchvision>=0.11.0
+torchaudio>=0.10.0
+
+# 数值计算
+numpy>=1.19.0,<1.24.0
+scipy>=1.5.0,<1.10.0
+
+# 机器学习
+scikit-learn>=0.24.0,<1.2.0
+
+# 数据处理
+pandas>=1.1.0,<1.6.0
+
+# 可视化（仅用于保存图表，不需要显示）
+matplotlib>=3.3.0,<3.7.0
+seaborn>=0.11.0
+scikit-plot>=0.3.7
+
+# 工具
+joblib>=1.0.0
+
+# 注意：
+# 1. 不要安装 tensorflow, keras（已迁移到PyTorch）
+# 2. 不要安装 pyside2（服务器不需要GUI）
+# 3. 如果已安装，请先卸载：
+#    pip uninstall tensorflow tensorflow-gpu keras pyside2 pyside6 -y
+
+
