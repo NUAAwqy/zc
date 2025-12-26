@@ -36,8 +36,15 @@ def training_stage_prepro(data_path, signal_length=864, signal_number=1000, norm
         X_test : 测试集
         y_test : 测试集标签
     """
-    # 获得该文件夹下所有.mat文件名
-    file_names = os.listdir(data_path)
+    # 递归查找该文件夹下所有 .mat 文件路径（支持嵌套目录上传）
+    mat_file_paths = []
+    for root, _, files in os.walk(data_path):
+        for f in files:
+            if f.lower().endswith('.mat'):
+                mat_file_paths.append(os.path.join(root, f))
+
+    # 使用文件名作为键（保持行为向后兼容）
+    file_names = [os.path.basename(p) for p in mat_file_paths]
 
     def capture():
         """
@@ -50,8 +57,9 @@ def training_stage_prepro(data_path, signal_length=864, signal_number=1000, norm
         """
         data_dict = {}
 
-        for file_name in file_names:
-            file_path = os.path.join(data_path, file_name)  # 文件路径
+        for idx, file_name in enumerate(file_names):
+            # 支持嵌套目录：从上面构建的 mat_file_paths 中取出完整路径
+            file_path = mat_file_paths[idx]
             file = loadmat(file_path)  # 读取 .mat 文件，返回的是一个 字典
             file_keys = file.keys()  # 获得该字典所有的key
             for key in file_keys:  # 遍历key, 获得 DE 的数据

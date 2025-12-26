@@ -163,6 +163,106 @@
       "accuracy": 0.432,
       "train_time": "20251225_162146",
       "status": "completed"
+    },
+    {
+      "id": "e8dbe4ac-ca92-4ef9-9984-dc379fcc65c7",
+      "name": "GRU_20251226_172521",
+      "type": "GRU",
+      "path": "./models\\GRU_20251226_172521.pth",
+      "config_path": "./models\\GRU_20251226_172521.json",
+      "accuracy": 0.421,
+      "train_time": "20251226_172521",
+      "status": "completed"
+    },
+    {
+      "id": "5ee3a9a5-6c3b-4ab4-8f63-cbc2ada69788",
+      "name": "LSTM_20251226_172722",
+      "type": "LSTM",
+      "path": "./models\\LSTM_20251226_172722.pth",
+      "config_path": "./models\\LSTM_20251226_172722.json",
+      "accuracy": 0.843,
+      "train_time": "20251226_172722",
+      "status": "completed"
+    },
+    {
+      "id": "92c6c91c-41d1-405a-9dab-98c1920c91b5",
+      "name": "LSTM_20251226_172944",
+      "type": "LSTM",
+      "path": "./models\\LSTM_20251226_172944.pth",
+      "config_path": "./models\\LSTM_20251226_172944.json",
+      "accuracy": 0.839,
+      "train_time": "20251226_172944",
+      "status": "completed"
+    },
+    {
+      "id": "a4ae79b4-e692-438e-9685-e21e65aec913",
+      "name": "LSTM_20251226_173127",
+      "type": "LSTM",
+      "path": "./models\\LSTM_20251226_173127.pth",
+      "config_path": "./models\\LSTM_20251226_173127.json",
+      "accuracy": 0.856,
+      "train_time": "20251226_173127",
+      "status": "completed"
+    },
+    {
+      "id": "056fbe0b-0ecd-4f85-a475-fad1e3df39cd",
+      "name": "LSTM_20251226_173938",
+      "type": "LSTM",
+      "path": "./models\\LSTM_20251226_173938.pth",
+      "config_path": "./models\\LSTM_20251226_173938.json",
+      "accuracy": 0.813,
+      "train_time": "20251226_173938",
+      "status": "completed"
+    },
+    {
+      "id": "877cc971-abfb-4f52-b4a7-68bdd6df4a4a",
+      "name": "random_forest_20251226_174144",
+      "type": "random_forest",
+      "path": "./models\\random_forest_20251226_174144.m",
+      "config_path": "./models\\random_forest_20251226_174144.json",
+      "accuracy": 0.9955,
+      "train_time": "20251226_174144",
+      "status": "completed"
+    },
+    {
+      "id": "25cf507c-6f4a-4fef-89df-64428bc6ac9a",
+      "name": "1D_CNN_20251226_174244",
+      "type": "1D_CNN",
+      "path": "./models\\1D_CNN_20251226_174244.pth",
+      "config_path": "./models\\1D_CNN_20251226_174244.json",
+      "accuracy": 0.99,
+      "train_time": "20251226_174244",
+      "status": "completed"
+    },
+    {
+      "id": "cd88b43f-c4f5-4fe8-aa93-092c0a58ef98",
+      "name": "1D_CNN_20251226_174409",
+      "type": "1D_CNN",
+      "path": "./models\\1D_CNN_20251226_174409.pth",
+      "config_path": "./models\\1D_CNN_20251226_174409.json",
+      "accuracy": 0.979,
+      "train_time": "20251226_174409",
+      "status": "completed"
+    },
+    {
+      "id": "45203700-5b3e-4f0d-9a17-cd1f283949ae",
+      "name": "LSTM_20251226_174520",
+      "type": "LSTM",
+      "path": "./models\\LSTM_20251226_174520.pth",
+      "config_path": "./models\\LSTM_20251226_174520.json",
+      "accuracy": 0.214,
+      "train_time": "20251226_174520",
+      "status": "completed"
+    },
+    {
+      "id": "d8651d38-4fa3-4555-96b5-59ad5d2ef980",
+      "name": "RUL_CNN_20251226_174801",
+      "type": "RUL_CNN",
+      "path": "./models\\RUL_CNN_20251226_174801.pth",
+      "config_path": "./models\\RUL_CNN_20251226_174801.json",
+      "accuracy": 0.6415094339622641,
+      "train_time": "20251226_174801",
+      "status": "completed"
     }
   ],
   "diagnoses": [
